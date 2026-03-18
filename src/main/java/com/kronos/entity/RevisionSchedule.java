@@ -12,7 +12,21 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "revision_schedules")
+@Table(
+        name = "revision_schedules",
+        indexes = {
+                @Index(name = "idx_rev_sched_topic_id", columnList = "topic_id"),
+                @Index(name = "idx_rev_sched_scheduled_date_status", columnList = "scheduled_date,status"),
+                @Index(name = "idx_rev_sched_notify", columnList = "scheduled_date,status,notification_sent"),
+                @Index(name = "idx_rev_sched_status_scheduled_date", columnList = "status,scheduled_date")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_rev_sched_topic_day_number",
+                        columnNames = {"topic_id", "day_number"}
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,10 +46,10 @@ public class RevisionSchedule {
     private RevisionPlan revisionPlan;
 
     @Column(nullable = false)
-    private int dayNumber; // which day in the plan (e.g., 4)
+    private int dayNumber;
 
     @Column(nullable = false)
-    private LocalDate scheduledDate; // createdAt.toLocalDate() + dayNumber
+    private LocalDate scheduledDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -45,7 +59,8 @@ public class RevisionSchedule {
 
     private String googleCalendarEventId;
 
-    private boolean notificationSent;
+    @Column(nullable = false)
+    private boolean notificationSent = false;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
