@@ -10,8 +10,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "monthly_summaries",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "month", "year"}))
+@Table(
+        name = "monthly_summaries",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_monthly_summary_user_month_year",
+                columnNames = {"user_id", "month", "year"}
+        )
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,10 +32,10 @@ public class MonthlySummary {
     private User user;
 
     @Column(nullable = false)
-    private int month; // 1-12
+    private int month;
 
     @Column(nullable = false)
-    private int year; // e.g., 2026
+    private int year;
 
     private int totalTopicsLearned;
 
@@ -39,10 +44,7 @@ public class MonthlySummary {
     private int totalRevisionsMissed;
 
     @Column(columnDefinition = "TEXT")
-    private String aiSummary; // AI response
-
-    @Column(columnDefinition = "TEXT")
-    private String visualizationDataJson; // Can be used for data visualization
+    private String aiSummary;
 
     @Column(nullable = false)
     private LocalDateTime generatedAt;

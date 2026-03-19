@@ -16,9 +16,7 @@ import java.util.UUID;
         name = "revision_schedules",
         indexes = {
                 @Index(name = "idx_rev_sched_topic_id", columnList = "topic_id"),
-                @Index(name = "idx_rev_sched_scheduled_date_status", columnList = "scheduled_date,status"),
-                @Index(name = "idx_rev_sched_notify", columnList = "scheduled_date,status,notification_sent"),
-                @Index(name = "idx_rev_sched_status_scheduled_date", columnList = "status,scheduled_date")
+                @Index(name = "idx_rev_sched_scheduled_date_status", columnList = "scheduled_date,status")
         },
         uniqueConstraints = {
                 @UniqueConstraint(
@@ -45,24 +43,26 @@ public class RevisionSchedule {
     @JoinColumn(name = "revision_plan_id", nullable = false)
     private RevisionPlan revisionPlan;
 
-    @Column(nullable = false)
+    @Column(name = "day_number", nullable = false)
     private int dayNumber;
 
-    @Column(nullable = false)
+    @Column(name = "scheduled_date", nullable = false)
     private LocalDate scheduledDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RevisionStatus status;
 
+    @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
+    @Column(name = "google_calendar_event_id")
     private String googleCalendarEventId;
 
-    @Column(nullable = false)
+    @Column(name = "notification_sent", nullable = false)
     private boolean notificationSent = false;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist

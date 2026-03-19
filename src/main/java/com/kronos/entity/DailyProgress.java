@@ -11,8 +11,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "daily_progress",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"lock_in_challenge_id", "date"}))
+@Table(
+        name = "daily_progress",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_daily_progress_challenge_date",
+                columnNames = {"lock_in_challenge_id", "date"}
+        )
+)
 @Getter
 @Setter
 @NoArgsConstructor
