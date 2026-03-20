@@ -42,6 +42,9 @@ public class User {
     @Column(nullable = false)
     private NotificationPreference notificationPreference;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
