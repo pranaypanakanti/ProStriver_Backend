@@ -2,3 +2,51 @@ spring:
   application:
     name: Kronos
 
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+kronos:
+  security:
+    jwt:
+      issuer: "kronos-api"
+      access-token-minutes: 30
+      refresh-token-days: 30
+      secret-base64: ${JWT_SECRET_BASE64}
+    cookies:
+      refresh-token-name: "kronos_rt"
+      refresh-token-path: "/api/auth"
+      refresh-token-secure: ${COOKIE_SECURE:true}
+      refresh-token-same-site: "Strict"
+
+  otp:
+    signup-ttl-minutes: 10
+    forgot-password-ttl-minutes: 10
+    resend-cooldown-seconds: 45
+    max-attempts: 5
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
