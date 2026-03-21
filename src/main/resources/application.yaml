@@ -27,6 +27,8 @@ spring:
             enable: true
 
 kronos:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
   security:
     jwt:
       issuer: "kronos-api"
@@ -36,8 +38,8 @@ kronos:
     cookies:
       refresh-token-name: "kronos_rt"
       refresh-token-path: "/api/auth"
+      refresh-token-same-site: ${COOKIE_SAMESITE:Strict}
       refresh-token-secure: ${COOKIE_SECURE:true}
-      refresh-token-same-site: "Strict"
 
   otp:
     signup-ttl-minutes: 10
