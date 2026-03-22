@@ -1,5 +1,6 @@
 package com.kronos.security;
 
+import com.kronos.auth.OtpProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,13 +16,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableConfigurationProperties(SecurityProperties.class)
+@EnableConfigurationProperties({SecurityProperties.class, OtpProperties.class})
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final KronosUserDetailsService userDetailsService;
-    private final RestSecurityHandlers restSecurityHandlers; // ✅ injected here
+    private final RestSecurityHandlers restSecurityHandlers;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,10 +43,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider provider) throws Exception {
+        // ✅ Enable CORS (uses CorsConfigurationSource bean from CorsConfig)
+        http.cors(cors -> {});
+
         http.csrf(csrf -> csrf.disable());
 
         http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // ✅ JSON 401/403
         http.exceptionHandling(eh -> eh
                 .authenticationEntryPoint(restSecurityHandlers)
                 .accessDeniedHandler(restSecurityHandlers)

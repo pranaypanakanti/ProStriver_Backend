@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,6 +40,7 @@ public class AuthService {
 
     private final JwtService jwtService;
     private final SecurityProperties securityProperties;
+    private final OtpProperties otpProperties;
     private final EmailService emailService;
 
     // ---------- SIGNUP ----------
@@ -187,11 +189,15 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
 
-        refreshTokenRepository.findAllByUserIdAndStatus(user.getId(), RefreshTokenStatus.ACTIVE).forEach(rt -> {
-            rt.setStatus(RefreshTokenStatus.REVOKED);
-            rt.setRevokedAt(LocalDateTime.now());
-            refreshTokenRepository.save(rt);
-        });
+        List<RefreshToken> tokens = refreshTokenRepository.findAllByUserIdAndStatus(user.getId(), RefreshTokenStatus.ACTIVE);
+        if (!tokens.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            tokens.forEach(rt -> {
+                rt.setStatus(RefreshTokenStatus.REVOKED);
+                rt.setRevokedAt(now);
+            });
+            refreshTokenRepository.saveAll(tokens);
+        }
 
         return new MessageResponse("Logged out from all devices.");
     }
@@ -200,6 +206,7 @@ public class AuthService {
     public MessageResponse forgotPassword(ForgotPasswordRequest req) {
         String email = req.getEmail().toLowerCase().trim();
 
+        // Do not leak existence; only send if user exists + verified
         userRepository.findByEmail(email).ifPresent(u -> {
             if (u.isEmailVerified()) {
                 sendOtpInternal(email, OtpPurpose.FORGOT_PASSWORD);
@@ -221,11 +228,7 @@ public class AuthService {
         userRepository.save(user);
 
         // revoke all active refresh tokens
-        refreshTokenRepository.findAllByUserIdAndStatus(user.getId(), RefreshTokenStatus.ACTIVE).forEach(rt -> {
-            rt.setStatus(RefreshTokenStatus.REVOKED);
-            rt.setRevokedAt(LocalDateTime.now());
-            refreshTokenRepository.save(rt);
-        });
+        revokeAllActiveRefreshTokens(user.getId());
 
         return new MessageResponse("Password reset successful.");
     }
@@ -243,22 +246,31 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);
 
-        refreshTokenRepository.findAllByUserIdAndStatus(user.getId(), RefreshTokenStatus.ACTIVE).forEach(rt -> {
-            rt.setStatus(RefreshTokenStatus.REVOKED);
-            rt.setRevokedAt(LocalDateTime.now());
-            refreshTokenRepository.save(rt);
-        });
+        // revoke all active refresh tokens
+        revokeAllActiveRefreshTokens(user.getId());
 
         return new MessageResponse("Password changed successfully.");
     }
 
     // ---------- helpers ----------
+    private void revokeAllActiveRefreshTokens(UUID userId) {
+        List<RefreshToken> tokens = refreshTokenRepository.findAllByUserIdAndStatus(userId, RefreshTokenStatus.ACTIVE);
+        if (tokens.isEmpty()) return;
+
+        LocalDateTime now = LocalDateTime.now();
+        tokens.forEach(rt -> {
+            rt.setStatus(RefreshTokenStatus.REVOKED);
+            rt.setRevokedAt(now);
+        });
+        refreshTokenRepository.saveAll(tokens);
+    }
+
     private void sendOtpInternal(String email, OtpPurpose purpose) {
         LocalDateTime now = LocalDateTime.now();
 
         OtpCode latest = otpCodeRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, purpose).orElse(null);
-        int cooldownSeconds = 45;
 
+        int cooldownSeconds = otpProperties.getResendCooldownSeconds();
         if (latest != null && latest.getLastSentAt() != null &&
                 latest.getLastSentAt().plusSeconds(cooldownSeconds).isAfter(now)) {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "Please wait before requesting OTP again");
@@ -266,13 +278,17 @@ public class AuthService {
 
         String otp = OtpGenerator.generate6Digits();
 
+        int ttlMinutes = (purpose == OtpPurpose.SIGNUP_VERIFY_EMAIL)
+                ? otpProperties.getSignupTtlMinutes()
+                : otpProperties.getForgotPasswordTtlMinutes();
+
         OtpCode code = OtpCode.builder()
                 .email(email)
                 .purpose(purpose)
                 .otpHash(Sha256.hex(otp))
-                .expiresAt(now.plusMinutes(10))
+                .expiresAt(now.plusMinutes(ttlMinutes))
                 .attempts(0)
-                .maxAttempts(5)
+                .maxAttempts(otpProperties.getMaxAttempts())
                 .used(false)
                 .lastSentAt(now)
                 .build();
