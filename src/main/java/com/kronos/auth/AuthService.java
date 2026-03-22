@@ -56,7 +56,7 @@ public class AuthService {
         user.setFullName(req.getFullName().trim());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setRole(Role.USER);
-        user.setNotificationPreference(NotificationPreference.NONE);
+        user.setNotificationPreference(NotificationPreference.EMAIL);
         user.setEmailVerified(false);
 
         userRepository.save(user);
