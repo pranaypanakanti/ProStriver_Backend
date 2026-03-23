@@ -45,6 +45,9 @@ public class Topic {
     @JoinColumn(name = "revision_plan_id")
     private RevisionPlan revisionPlan;
 
+    @Column(name = "manual_reminder_pattern")
+    private String manualReminderPattern;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TopicStatus status;

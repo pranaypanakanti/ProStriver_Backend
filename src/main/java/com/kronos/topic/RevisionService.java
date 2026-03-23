@@ -5,6 +5,7 @@ import com.kronos.entity.RevisionSchedule;
 import com.kronos.entity.enums.RevisionStatus;
 import com.kronos.entity.enums.TopicStatus;
 import com.kronos.repository.RevisionScheduleRepository;
+import com.kronos.repository.TopicRepository;
 import com.kronos.repository.UserRepository;
 import com.kronos.topic.dto.TodayRevisionItemResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class RevisionService {
 
     private final RevisionScheduleRepository revisionScheduleRepository;
     private final UserRepository userRepository;
+    private final TopicRepository topicRepository; // NEW
 
     @Transactional(readOnly = true)
     public List<TodayRevisionItemResponse> today(String emailRaw) {
@@ -69,6 +71,7 @@ public class RevisionService {
 
         if (allDone) {
             rs.getTopic().setStatus(TopicStatus.COMPLETED);
+            topicRepository.save(rs.getTopic());
         }
     }
 }

@@ -138,6 +138,14 @@ public class AuthService {
         RefreshToken existing = refreshTokenRepository.findByTokenHash(hash)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
 
+        // NEW: reuse detection
+        // If a revoked token is presented again, assume compromise and revoke all active tokens.
+        if (existing.getStatus() == RefreshTokenStatus.REVOKED) {
+            UUID userId = existing.getUser().getId();
+            revokeAllActiveRefreshTokens(userId);
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+        }
+
         if (existing.getStatus() != RefreshTokenStatus.ACTIVE) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Refresh token not active");
         }
@@ -167,6 +175,7 @@ public class AuthService {
         long expiresIn = securityProperties.getJwt().getAccessTokenMinutes() * 60L;
         return new AuthTokens(accessToken, expiresIn, replacement.getRefreshTokenRaw());
     }
+
 
     // ---------- LOGOUT ----------
     public MessageResponse logout(String refreshTokenRaw) {

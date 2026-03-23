@@ -3,6 +3,8 @@ package com.kronos.repository;
 import com.kronos.entity.RefreshToken;
 import com.kronos.entity.enums.RefreshTokenStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,4 +18,18 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
     List<RefreshToken> findAllByUserIdAndStatus(UUID userId, RefreshTokenStatus status);
 
     long deleteByExpiresAtBefore(LocalDateTime time);
+
+    void deleteByExpiresAtBeforeAndStatus(LocalDateTime time, RefreshTokenStatus status);
+
+    void deleteByRevokedAtBeforeAndStatus(LocalDateTime time, RefreshTokenStatus status);
+
+    // NEW: mark any time-expired ACTIVE tokens as EXPIRED (so cleanup can delete them)
+    @Modifying
+    @Query("""
+        update RefreshToken rt
+        set rt.status = com.kronos.entity.enums.RefreshTokenStatus.EXPIRED
+        where rt.status = com.kronos.entity.enums.RefreshTokenStatus.ACTIVE
+          and rt.expiresAt < :now
+    """)
+    int markActiveTokensExpired(LocalDateTime now);
 }

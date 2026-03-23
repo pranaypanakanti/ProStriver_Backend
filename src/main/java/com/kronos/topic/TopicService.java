@@ -21,20 +21,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TopicService {
 
+    private static final int MAX_MANUAL_REMINDER_DAYS = 15;
+
     private final TopicRepository topicRepository;
     private final UserRepository userRepository;
     private final RevisionPlanRepository revisionPlanRepository;
     private final RevisionScheduleRepository revisionScheduleRepository;
+
+    private final Clock clock;
 
     @Transactional
     public TopicResponse create(String emailRaw, CreateTopicRequest req) {
@@ -46,25 +50,56 @@ public class TopicService {
         topic.setTitle(normalize(req.getTitle()));
         topic.setNotes(req.getNotes() == null ? null : req.getNotes().trim());
 
-        RevisionPlan plan = null;
-        if (req.getRevisionPlanId() != null) {
-            plan = revisionPlanRepository.findById(req.getRevisionPlanId())
-                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid revisionPlanId"));
-            topic.setStatus(TopicStatus.ACTIVE);
-        } else {
-            topic.setStatus(TopicStatus.LEARNED);
+        boolean hasPlan = req.getRevisionPlanId() != null;
+        boolean hasManualPattern = req.getManualReminderPattern() != null && !req.getManualReminderPattern().isBlank();
+
+        if (hasPlan && hasManualPattern) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Provide either revisionPlanId or manualReminderPattern, not both");
         }
 
-        topic.setRevisionPlan(plan);
+        // Use server date as the base for schedule calculation.
+        // This avoids relying on JPA @PrePersist timing for createdAt.
+        LocalDate baseDate = LocalDate.now(clock);
+
+        if (hasPlan) {
+            RevisionPlan plan = revisionPlanRepository.findById(req.getRevisionPlanId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid revisionPlanId"));
+
+            topic.setStatus(TopicStatus.ACTIVE);
+            topic.setRevisionPlan(plan);
+            topic.setManualReminderPattern(null);
+
+            topicRepository.save(topic);
+            createSchedulesFromPlan(topic, plan, baseDate);
+
+            return toResponse(topic);
+        }
+
+        if (hasManualPattern) {
+            List<Integer> days = parseManualPattern(req.getManualReminderPattern());
+
+            String normalizedPattern = days.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+
+            topic.setStatus(TopicStatus.ACTIVE);
+            topic.setRevisionPlan(null);
+            topic.setManualReminderPattern(normalizedPattern);
+
+            topicRepository.save(topic);
+            createSchedulesFromManualPattern(topic, days, baseDate);
+
+            return toResponse(topic);
+        }
+
+        topic.setStatus(TopicStatus.LEARNED);
+        topic.setRevisionPlan(null);
+        topic.setManualReminderPattern(null);
 
         topicRepository.save(topic);
-
-        if (plan != null) {
-            createSchedules(topic, plan);
-        }
-
         return toResponse(topic);
     }
+
 
     @Transactional(readOnly = true)
     public Page<TopicResponse> list(String emailRaw,
@@ -151,15 +186,18 @@ public class TopicService {
         revisionScheduleRepository.saveAll(schedules);
     }
 
-    private void createSchedules(Topic topic, RevisionPlan plan) {
-        LocalDate baseDate = topic.getCreatedAt().toLocalDate();
 
+    private void createSchedulesFromPlan(Topic topic, RevisionPlan plan, LocalDate baseDate) {
         List<Integer> days = plan.getRevisionDays().stream()
                 .sorted(Comparator.naturalOrder())
                 .toList();
 
         for (int day : days) {
             if (day <= 1) continue;
+
+            if (revisionScheduleRepository.existsByTopicIdAndDayNumberAndDeletedAtIsNull(topic.getId(), day)) {
+                continue;
+            }
 
             RevisionSchedule rs = new RevisionSchedule();
             rs.setTopic(topic);
@@ -171,6 +209,59 @@ public class TopicService {
 
             revisionScheduleRepository.save(rs);
         }
+    }
+
+    private void createSchedulesFromManualPattern(Topic topic, List<Integer> days, LocalDate baseDate) {
+        for (int day : days) {
+            if (day <= 1) continue;
+
+            if (revisionScheduleRepository.existsByTopicIdAndDayNumberAndDeletedAtIsNull(topic.getId(), day)) {
+                continue;
+            }
+
+            RevisionSchedule rs = new RevisionSchedule();
+            rs.setTopic(topic);
+            rs.setRevisionPlan(null);
+            rs.setDayNumber(day);
+            rs.setScheduledDate(baseDate.plusDays(day - 1L));
+            rs.setStatus(RevisionStatus.PENDING);
+            rs.setNotificationSent(false);
+
+            revisionScheduleRepository.save(rs);
+        }
+    }
+
+    private List<Integer> parseManualPattern(String raw) {
+        String[] parts = raw.split(",");
+        Set<Integer> distinct = new HashSet<>();
+
+        for (String p : parts) {
+            String t = p.trim();
+            if (t.isEmpty()) continue;
+
+            int day;
+            try {
+                day = Integer.parseInt(t);
+            } catch (NumberFormatException e) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid manualReminderPattern. Must be comma-separated integers.");
+            }
+
+            if (day <= 0) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "manualReminderPattern day numbers must be >= 1");
+            }
+
+            distinct.add(day);
+        }
+
+        if (distinct.size() > MAX_MANUAL_REMINDER_DAYS) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "manualReminderPattern supports max " + MAX_MANUAL_REMINDER_DAYS + " distinct days");
+        }
+
+        List<Integer> days = distinct.stream().sorted().toList();
+        if (days.isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "manualReminderPattern cannot be empty");
+        }
+        return days;
     }
 
     private User getUserByEmail(String emailRaw) {
@@ -193,6 +284,7 @@ public class TopicService {
                 t.getNotes(),
                 t.getStatus(),
                 revisionPlanId,
+                t.getManualReminderPattern(),
                 t.getCreatedAt()
         );
     }

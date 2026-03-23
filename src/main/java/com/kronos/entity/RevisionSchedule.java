@@ -40,7 +40,7 @@ public class RevisionSchedule {
     private Topic topic;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "revision_plan_id", nullable = false)
+    @JoinColumn(name = "revision_plan_id")
     private RevisionPlan revisionPlan;
 
     @Column(name = "day_number", nullable = false)

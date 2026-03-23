@@ -14,9 +14,12 @@ import java.util.UUID;
 @Table(
         name = "daily_progress",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_daily_progress_challenge_date",
-                columnNames = {"lock_in_challenge_id", "date"}
-        )
+                name = "uk_daily_progress_user_date",
+                columnNames = {"user_id", "date"}
+        ),
+        indexes = {
+                @Index(name = "idx_daily_progress_user_date", columnList = "user_id,date")
+        }
 )
 @Getter
 @Setter
@@ -29,26 +32,34 @@ public class DailyProgress {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lock_in_challenge_id", nullable = false)
-    private LockInChallenge lockInChallenge;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
     private LocalDate date;
 
     @Column(nullable = false)
-    private int dayNumber;
+    private int topicsCreated = 0;
 
-    private String summary;
+    @Column(nullable = false)
+    private int revisionsEmailed = 0;
 
-    private int topicsStudied;
-
-    private int topicsRevised;
+    @Column(nullable = false)
+    private int revisionsCompleted = 0;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

@@ -1,11 +1,16 @@
 package com.kronos.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
-import jakarta.servlet.*;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +22,8 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtService jwtService;
     private final KronosUserDetailsService userDetailsService;
@@ -46,10 +53,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(auth);
+
+        } catch (ExpiredJwtException ex) {
+            SecurityContextHolder.clearContext();
+            log.debug("JWT expired for path={} ip={}: {}", request.getRequestURI(), resolveIp(request), ex.getMessage());
+
+        } catch (JwtException ex) {
+            SecurityContextHolder.clearContext();
+            log.debug("JWT invalid for path={} ip={}: {}", request.getRequestURI(), resolveIp(request), ex.getMessage());
+
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
+            log.debug("JWT auth error for path={} ip={}: {}", request.getRequestURI(), resolveIp(request), ex.getMessage());
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) return xff.split(",")[0].trim();
+        return request.getRemoteAddr();
     }
 }

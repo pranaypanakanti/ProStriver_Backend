@@ -21,4 +21,6 @@ public class CreateTopicRequest {
     private String notes;
 
     private UUID revisionPlanId;
+
+    private String manualReminderPattern;
 }

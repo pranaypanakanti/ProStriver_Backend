@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +23,12 @@ public class RevisionEmailScheduler {
     private final RevisionScheduleRepository revisionScheduleRepository;
     private final EmailService emailService;
 
+    private final Clock clock;
+
     @Scheduled(cron = "0 0 8 * * *")
     @Transactional
     public void sendDailyRevisionDigest() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         List<RevisionSchedule> due = revisionScheduleRepository.findDueForEmail(today, RevisionStatus.PENDING);
         if (due.isEmpty()) return;

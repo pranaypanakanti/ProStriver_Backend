@@ -47,6 +47,15 @@ public class AdminRevisionPlanService {
         RevisionPlan rp = revisionPlanRepository.findById(id)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Revision plan not found"));
 
+        if (req.getName() != null) {
+            String normalizedName = normalize(req.getName());
+            revisionPlanRepository.findByName(normalizedName).ifPresent(existing -> {
+                if (!existing.getId().equals(rp.getId())) {
+                    throw new ApiException(HttpStatus.BAD_REQUEST, "Revision plan name already exists");
+                }
+            });
+            rp.setName(normalizedName);
+        }
         if (req.getName() != null) rp.setName(normalize(req.getName()));
         if (req.getDescription() != null) rp.setDescription(req.getDescription().trim());
         if (req.getRevisionDaysPattern() != null) rp.setRevisionDaysPattern(normalizePattern(req.getRevisionDaysPattern()));
@@ -77,7 +86,6 @@ public class AdminRevisionPlanService {
     }
 
     private String normalizePattern(String p) {
-        // normalize "1, 4,7" -> "1,4,7"
-        return p.trim().replaceAll("\\s*", "").replaceAll(",,+", ",");
+        return p.trim().replaceAll("\\s+", "").replaceAll(",{2,}", ",");
     }
 }

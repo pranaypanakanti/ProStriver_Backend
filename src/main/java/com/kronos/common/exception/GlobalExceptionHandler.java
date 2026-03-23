@@ -25,4 +25,9 @@ public class GlobalExceptionHandler {
         }
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<MessageResponse> handleAny(Exception ex) {
+        return ResponseEntity.internalServerError().body(new MessageResponse("Internal server error"));
+    }
 }

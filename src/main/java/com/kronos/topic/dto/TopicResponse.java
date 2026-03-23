@@ -16,5 +16,6 @@ public class TopicResponse {
     private String notes;
     private TopicStatus status;
     private UUID revisionPlanId;
+    private String manualReminderPattern;
     private LocalDateTime createdAt;
 }

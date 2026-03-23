@@ -13,4 +13,6 @@ public interface LockInChallengeRepository extends JpaRepository<LockInChallenge
     Optional<LockInChallenge> findByUserIdAndStatus(UUID userId, ChallengeStatus status);
 
     List<LockInChallenge> findAllByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    List<LockInChallenge> findByStatus(ChallengeStatus status);
 }

@@ -4,6 +4,7 @@ import com.kronos.entity.RevisionSchedule;
 import com.kronos.entity.enums.RevisionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -53,4 +54,41 @@ public interface RevisionScheduleRepository extends JpaRepository<RevisionSchedu
               and rs.deletedAt is null
             """)
     List<RevisionSchedule> findAllActiveByTopicId(UUID topicId);
+
+    @Query("""
+    select rs from RevisionSchedule rs
+    where rs.deletedAt is null
+      and rs.topic.deletedAt is null
+      and rs.scheduledDate = :date
+      and rs.notificationSent = true
+      and rs.status = :status
+""")
+    List<RevisionSchedule> findAllEmailedPendingForDate(@Param("date") LocalDate date,
+                                                        @Param("status") RevisionStatus status);
+
+    @Query("""
+    select count(rs) from RevisionSchedule rs
+    where rs.deletedAt is null
+      and rs.topic.deletedAt is null
+      and rs.topic.user.id = :userId
+      and rs.scheduledDate = :date
+      and rs.notificationSent = true
+""")
+    long countEmailedForUserAndDate(@Param("userId") UUID userId,
+                                    @Param("date") LocalDate date);
+
+    @Query("""
+    select count(rs) from RevisionSchedule rs
+    where rs.deletedAt is null
+      and rs.topic.deletedAt is null
+      and rs.topic.user.id = :userId
+      and rs.scheduledDate = :date
+      and rs.notificationSent = true
+      and rs.status = :status
+""")
+    long countEmailedForUserAndDateByStatus(@Param("userId") UUID userId,
+                                            @Param("date") LocalDate date,
+                                            @Param("status") RevisionStatus status);
+
+    boolean existsByTopicIdAndDayNumberAndDeletedAtIsNull(UUID topicId, int dayNumber);
 }

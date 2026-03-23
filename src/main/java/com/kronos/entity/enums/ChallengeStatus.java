@@ -4,5 +4,5 @@ public enum ChallengeStatus {
     ACTIVE,
     COMPLETED,
     FAILED,
-    ABANDONED
+    QUIT
 }

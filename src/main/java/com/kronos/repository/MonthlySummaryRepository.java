@@ -7,8 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MonthlySummaryRepository extends JpaRepository<MonthlySummary, UUID> {
-
     Optional<MonthlySummary> findByUserIdAndMonthAndYear(UUID userId, int month, int year);
-
-    boolean existsByUserIdAndMonthAndYear(UUID userId, int month, int year);
 }
