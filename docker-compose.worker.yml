@@ -1,0 +1,10 @@
+services:
+  kronos-worker:
+    image: pranaypanakanti/prostriver:latest
+    container_name: prostriver-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: worker
+      SERVER_PORT: 8080
