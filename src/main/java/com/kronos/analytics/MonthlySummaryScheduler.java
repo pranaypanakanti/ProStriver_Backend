@@ -6,6 +6,7 @@ import com.kronos.repository.DailyProgressRepository;
 import com.kronos.repository.MonthlySummaryRepository;
 import com.kronos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Profile("worker")
 @Component
 @RequiredArgsConstructor
 public class MonthlySummaryScheduler {

@@ -7,6 +7,7 @@ import com.kronos.entity.enums.ChallengeType;
 import com.kronos.repository.DailyProgressRepository;
 import com.kronos.repository.LockInChallengeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
+@Profile("worker")
 @Component
 @RequiredArgsConstructor
 public class ChallengeStreakScheduler {
@@ -22,7 +24,7 @@ public class ChallengeStreakScheduler {
     private final LockInChallengeRepository lockInChallengeRepository;
     private final DailyProgressRepository dailyProgressRepository;
 
-    private final Clock clock; // NEW
+    private final Clock clock;
 
     @Scheduled(cron = "0 20 0 * * *")
     @Transactional

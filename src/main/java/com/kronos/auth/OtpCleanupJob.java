@@ -4,12 +4,14 @@ import com.kronos.entity.enums.RefreshTokenStatus;
 import com.kronos.repository.OtpCodeRepository;
 import com.kronos.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Profile("worker")
 @Component
 @RequiredArgsConstructor
 public class OtpCleanupJob {

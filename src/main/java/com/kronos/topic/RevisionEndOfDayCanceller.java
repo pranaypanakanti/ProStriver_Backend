@@ -4,6 +4,7 @@ import com.kronos.entity.RevisionSchedule;
 import com.kronos.entity.enums.RevisionStatus;
 import com.kronos.repository.RevisionScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
+@Profile("worker")
 @Component
 @RequiredArgsConstructor
 public class RevisionEndOfDayCanceller {

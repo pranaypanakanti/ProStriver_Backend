@@ -6,6 +6,7 @@ import com.kronos.entity.enums.RevisionStatus;
 import com.kronos.notification.EmailService;
 import com.kronos.repository.RevisionScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Profile("worker")
 @Component
 @RequiredArgsConstructor
 public class RevisionEmailScheduler {
