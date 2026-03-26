@@ -2,10 +2,19 @@ spring:
   application:
     name: Kronos
 
+  main:
+    allow-bean-definition-overriding: true
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX}
+      minimum-idle: 0
+      connection-timeout: 2000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
   jpa:
     hibernate:
@@ -19,6 +28,8 @@ spring:
     port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
+    from: ${MAIL_FROM:no-reply@prostriver.me}
+    from-name: ${MAIL_FROM_NAME:ProStriver}
     properties:
       mail:
         smtp:
@@ -44,8 +55,8 @@ kronos:
     cookies:
       refresh-token-name: "kronos_rt"
       refresh-token-path: "/api/auth"
-      refresh-token-same-site: ${COOKIE_SAMESITE:Strict}
-      refresh-token-secure: ${COOKIE_SECURE:true}
+      refresh-token-same-site: ${COOKIE_SAMESITE}
+      refresh-token-secure: ${COOKIE_SECURE}
 
   otp:
     signup-ttl-minutes: 10

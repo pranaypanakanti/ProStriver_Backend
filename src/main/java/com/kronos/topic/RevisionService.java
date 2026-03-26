@@ -24,7 +24,7 @@ public class RevisionService {
 
     private final RevisionScheduleRepository revisionScheduleRepository;
     private final UserRepository userRepository;
-    private final TopicRepository topicRepository; // NEW
+    private final TopicRepository topicRepository;
 
     @Transactional(readOnly = true)
     public List<TodayRevisionItemResponse> today(String emailRaw) {
