@@ -1,0 +1,3 @@
+kronos:
+  scheduling:
+    enabled: false

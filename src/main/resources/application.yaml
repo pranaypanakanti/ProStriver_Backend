@@ -1,24 +1,21 @@
 spring:
   application:
-    name: Kronos
-
-  main:
-    allow-bean-definition-overriding: true
+    name: kronos
 
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     hikari:
-      maximum-pool-size: ${DB_POOL_MAX}
+      maximum-pool-size: ${DB_POOL_MAX:5}
       minimum-idle: 0
-      connection-timeout: 2000
+      connection-timeout: 10000
       idle-timeout: 600000
       max-lifetime: 1800000
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
     properties:
       hibernate:
         format_sql: true
@@ -55,8 +52,8 @@ kronos:
     cookies:
       refresh-token-name: "kronos_rt"
       refresh-token-path: "/api/auth"
-      refresh-token-same-site: ${COOKIE_SAMESITE}
-      refresh-token-secure: ${COOKIE_SECURE}
+      refresh-token-same-site: ${COOKIE_SAMESITE:Strict}
+      refresh-token-secure: ${COOKIE_SECURE:true}
 
   otp:
     signup-ttl-minutes: 10

@@ -14,10 +14,10 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${kronos.mail.from:no-reply@prostriver.me}")
+    @Value("${spring.mail.from:no-reply@prostriver.me}")
     private String from;
 
-    @Value("${kronos.mail.from-name:ProStriver}")
+    @Value("${spring.mail.from-name:ProStriver}")
     private String fromName;
 
     public void sendReminder(String toEmail, String subject, String body) {

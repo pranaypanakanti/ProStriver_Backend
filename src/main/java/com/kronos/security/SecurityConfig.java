@@ -54,8 +54,22 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests(auth -> auth
+                // Protected auth endpoints (require valid access token)
                 .requestMatchers(
-                        "/api/auth/**",
+                        "/api/auth/logout-all",
+                        "/api/auth/change-password"
+                ).authenticated()
+                .requestMatchers(
+                        "/api/auth/signup",
+                        "/api/auth/signup/resend-otp",
+                        "/api/auth/signup/verify-otp",
+                        "/api/auth/login",
+                        "/api/auth/refresh",
+                        "/api/auth/logout",
+                        "/api/auth/forgot-password",
+                        "/api/auth/reset-password"
+                ).permitAll()
+                .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html"

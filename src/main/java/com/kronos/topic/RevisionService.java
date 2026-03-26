@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +26,7 @@ public class RevisionService {
     private final RevisionScheduleRepository revisionScheduleRepository;
     private final UserRepository userRepository;
     private final TopicRepository topicRepository;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public List<TodayRevisionItemResponse> today(String emailRaw) {
@@ -32,7 +34,7 @@ public class RevisionService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"))
                 .getId();
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         return revisionScheduleRepository.findTodayForUser(userId, today, RevisionStatus.PENDING)
                 .stream()
@@ -63,7 +65,7 @@ public class RevisionService {
         if (rs.getStatus() != RevisionStatus.PENDING) return;
 
         rs.setStatus(RevisionStatus.COMPLETED);
-        rs.setCompletedAt(LocalDateTime.now());
+        rs.setCompletedAt(LocalDateTime.now(clock));
         revisionScheduleRepository.save(rs);
 
         boolean allDone = revisionScheduleRepository.findAllActiveByTopicId(rs.getTopic().getId()).stream()
