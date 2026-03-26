@@ -32,7 +32,7 @@ public class EmailService {
 
             mailSender.send(mimeMessage);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send email to " + toEmail, e);
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 

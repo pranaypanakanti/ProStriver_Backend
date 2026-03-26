@@ -68,6 +68,7 @@ public class AuthService {
         return new MessageResponse("Signup created. OTP sent to email.");
     }
 
+    @Transactional
     public MessageResponse resendSignupOtp(String emailRaw) {
         String email = emailRaw.toLowerCase().trim();
 
@@ -80,6 +81,7 @@ public class AuthService {
         return new MessageResponse("If the email is registered and unverified, an OTP has been sent.");
     }
 
+    @Transactional
     public MessageResponse verifySignupOtp(VerifyOtpRequest req) {
         OtpPurpose purpose = parsePurpose(req.getPurpose());
         if (purpose != OtpPurpose.SIGNUP_VERIFY_EMAIL) {
@@ -214,6 +216,7 @@ public class AuthService {
     }
 
     // ---------- FORGOT / RESET PASSWORD ----------
+    @Transactional
     public MessageResponse forgotPassword(ForgotPasswordRequest req) {
         String email = req.getEmail().toLowerCase().trim();
 

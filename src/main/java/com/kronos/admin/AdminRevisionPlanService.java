@@ -56,7 +56,6 @@ public class AdminRevisionPlanService {
             });
             rp.setName(normalizedName);
         }
-        if (req.getName() != null) rp.setName(normalize(req.getName()));
         if (req.getDescription() != null) rp.setDescription(req.getDescription().trim());
         if (req.getRevisionDaysPattern() != null) rp.setRevisionDaysPattern(normalizePattern(req.getRevisionDaysPattern()));
 
