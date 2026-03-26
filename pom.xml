@@ -9,11 +9,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.kronos</groupId>
-    <artifactId>Kronos</artifactId>
+    <groupId>com.ProStriver</groupId>
+    <artifactId>ProStriver</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Kronos</name>
-    <description>Kronos</description>
+    <name>ProStriver</name>
+    <description>ProStriver</description>
 
     <properties>
         <java.version>21</java.version>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>3.0.0</version>
+            <version>2.5.0</version>
         </dependency>
 
         <dependency>

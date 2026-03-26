@@ -1,5 +1,5 @@
 services:
-  kronos-api:
+  ProStriver-api:
     image: pranaypanakanti/prostriver:latest
     container_name: prostriver-api
     restart: unless-stopped

@@ -1,5 +1,5 @@
 services:
-  kronos-worker:
+  ProStriver-worker:
     image: pranaypanakanti/prostriver:latest
     container_name: prostriver-worker
     restart: unless-stopped

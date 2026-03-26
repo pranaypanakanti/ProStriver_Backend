@@ -1,0 +1,38 @@
+package com.ProStriver.topic;
+
+import com.ProStriver.entity.RevisionSchedule;
+import com.ProStriver.entity.enums.RevisionStatus;
+import com.ProStriver.repository.RevisionScheduleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.List;
+
+@Profile("worker")
+@Component
+@RequiredArgsConstructor
+public class RevisionEndOfDayCanceller {
+
+    private final RevisionScheduleRepository revisionScheduleRepository;
+
+    private final Clock clock; // NEW
+
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void cancelMissed() {
+        LocalDate yesterday = LocalDate.now(clock).minusDays(1);
+
+        List<RevisionSchedule> pending =
+                revisionScheduleRepository.findAllEmailedPendingForDate(yesterday, RevisionStatus.PENDING);
+
+        if (pending.isEmpty()) return;
+
+        pending.forEach(rs -> rs.setStatus(RevisionStatus.CANCELLED));
+        revisionScheduleRepository.saveAll(pending);
+    }
+}
