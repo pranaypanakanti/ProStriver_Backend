@@ -43,6 +43,7 @@ springdoc:
 prostriver:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
   security:
     jwt:
       issuer: "prostriver-api"
