@@ -33,6 +33,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/prostriver
-            docker-compose pull
-            docker-compose up -d
+            docker compose pull
+            docker compose down
+            docker compose up -d
             docker image prune -f
