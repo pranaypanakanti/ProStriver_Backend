@@ -2,10 +2,12 @@ package com.ProStriver.analytics;
 
 import com.ProStriver.analytics.dto.AnalyticsOverviewResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+@Profile("api")
 @RestController
 @RequestMapping("/api/analytics")
 @RequiredArgsConstructor

@@ -5,12 +5,14 @@ import com.ProStriver.admin.dto.CreateRevisionPlanRequest;
 import com.ProStriver.admin.dto.UpdateRevisionPlanRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Profile("api")
 @RestController
 @RequestMapping("/api/admin/revision-plans")
 @RequiredArgsConstructor
