@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "ProStriver.cors")
+@ConfigurationProperties(prefix = "prostriver.cors")
 public class CorsProperties {
     private List<String> allowedOrigins = new ArrayList<>();
 }

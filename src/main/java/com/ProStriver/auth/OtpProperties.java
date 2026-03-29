@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "ProStriver.otp")
+@ConfigurationProperties(prefix = "prostriver.otp")
 public class OtpProperties {
     private int signupTtlMinutes;
     private int forgotPasswordTtlMinutes;
