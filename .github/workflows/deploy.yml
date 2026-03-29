@@ -1,13 +1,12 @@
-name: Build & Deploy to EC2
+name: Build & Deploy to EC2 + DigitalOcean
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,12 +24,33 @@ jobs:
           push: true
           tags: pranaypanakanti/prostriver:latest
 
-      - name: Deploy to EC2
+  deploy-api:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy API to EC2
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/prostriver
+            docker compose pull
+            docker compose down
+            docker compose up -d
+            docker image prune -f
+
+  deploy-worker:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Worker to DigitalOcean
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: root
+          key: ${{ secrets.DO_SSH_KEY }}
           script: |
             cd ~/prostriver
             docker compose pull
