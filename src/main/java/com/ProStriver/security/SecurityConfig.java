@@ -26,11 +26,6 @@ public class SecurityConfig {
     private final RestSecurityHandlers restSecurityHandlers;
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
-    }
-
-    @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(PasswordEncoder encoder) {
         DaoAuthenticationProvider p = new DaoAuthenticationProvider();
         p.setUserDetailsService(userDetailsService);

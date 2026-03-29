@@ -2,6 +2,7 @@ package com.ProStriver.topic;
 
 import com.ProStriver.topic.dto.TodayRevisionItemResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Profile("api")
 @RestController
 @RequestMapping("/api/topics/revisions")
 @RequiredArgsConstructor

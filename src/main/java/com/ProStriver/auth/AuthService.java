@@ -14,6 +14,7 @@ import com.ProStriver.repository.RefreshTokenRepository;
 import com.ProStriver.repository.UserRepository;
 import com.ProStriver.security.JwtService;
 import com.ProStriver.security.SecurityProperties;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -37,13 +37,37 @@ public class AuthService {
     private final OtpCodeRepository otpCodeRepository;
 
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+    private final @Nullable AuthenticationManager authenticationManager;
 
     private final JwtService jwtService;
     private final SecurityProperties securityProperties;
     private final OtpProperties otpProperties;
     private final EmailService emailService;
     private final Clock clock;
+
+    public AuthService(
+            UserRepository userRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            OtpCodeRepository otpCodeRepository,
+            PasswordEncoder passwordEncoder,
+            @Nullable AuthenticationManager authenticationManager,
+            JwtService jwtService,
+            SecurityProperties securityProperties,
+            OtpProperties otpProperties,
+            EmailService emailService,
+            Clock clock
+    ) {
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.otpCodeRepository = otpCodeRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.securityProperties = securityProperties;
+        this.otpProperties = otpProperties;
+        this.emailService = emailService;
+        this.clock = clock;
+    }
 
     // ---------- SIGNUP ----------
     @Transactional

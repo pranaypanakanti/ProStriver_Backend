@@ -3,11 +3,13 @@ package com.ProStriver.auth;
 import com.ProStriver.security.SecurityProperties;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
+@Profile("api")
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenCookieService {

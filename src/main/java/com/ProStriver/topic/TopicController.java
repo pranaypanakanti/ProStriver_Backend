@@ -6,6 +6,7 @@ import com.ProStriver.topic.dto.PatchTopicRequest;
 import com.ProStriver.topic.dto.TopicResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Profile("api")
 @RestController
 @RequestMapping("/api/topics")
 @RequiredArgsConstructor
