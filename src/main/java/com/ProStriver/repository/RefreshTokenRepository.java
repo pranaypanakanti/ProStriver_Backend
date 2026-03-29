@@ -23,6 +23,8 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
 
     void deleteByRevokedAtBeforeAndStatus(LocalDateTime time, RefreshTokenStatus status);
 
+    void deleteAllByUserId(UUID userId);
+
     // NEW: mark any time-expired ACTIVE tokens as EXPIRED (so cleanup can delete them)
     @Modifying
     @Query("""

@@ -13,6 +13,7 @@ import com.ProStriver.repository.TopicRepository;
 import com.ProStriver.repository.UserRepository;
 import com.ProStriver.topic.dto.CreateTopicRequest;
 import com.ProStriver.topic.dto.PatchTopicRequest;
+import com.ProStriver.topic.dto.TopicMlSummaryResponse;
 import com.ProStriver.topic.dto.TopicResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -287,5 +288,21 @@ public class TopicService {
                 t.getManualReminderPattern(),
                 t.getCreatedAt()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<TopicMlSummaryResponse> mlSummary(String emailRaw) {
+        User user = getUserByEmail(emailRaw);
+        LocalDateTime since = LocalDateTime.now(clock).minusDays(30);
+
+        List<Topic> topics = topicRepository.findAllByUserIdAndCreatedSince(user.getId(), since);
+
+        return topics.stream()
+                .map(t -> new TopicMlSummaryResponse(
+                        t.getSubject(),
+                        t.getTitle(),
+                        t.getCreatedAt()
+                ))
+                .toList();
     }
 }

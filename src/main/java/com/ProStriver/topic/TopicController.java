@@ -3,6 +3,7 @@ package com.ProStriver.topic;
 import com.ProStriver.entity.enums.TopicStatus;
 import com.ProStriver.topic.dto.CreateTopicRequest;
 import com.ProStriver.topic.dto.PatchTopicRequest;
+import com.ProStriver.topic.dto.TopicMlSummaryResponse;
 import com.ProStriver.topic.dto.TopicResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Profile("api")
@@ -23,6 +25,11 @@ import java.util.UUID;
 public class TopicController {
 
     private final TopicService topicService;
+
+    @GetMapping("/ml-summary")
+    public ResponseEntity<List<TopicMlSummaryResponse>> mlSummary(Authentication auth) {
+        return ResponseEntity.ok(topicService.mlSummary(auth.getName()));
+    }
 
     @PostMapping
     public ResponseEntity<TopicResponse> create(Authentication auth, @Valid @RequestBody CreateTopicRequest req) {

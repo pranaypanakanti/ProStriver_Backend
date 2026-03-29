@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface OtpCodeRepository extends JpaRepository<OtpCode, UUID> {
     Optional<OtpCode> findTopByEmailAndPurposeOrderByCreatedAtDesc(String email, OtpPurpose purpose);
     long deleteByExpiresAtBefore(LocalDateTime time);
+    void deleteAllByEmail(String email);
 }
