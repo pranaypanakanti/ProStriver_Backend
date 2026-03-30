@@ -41,6 +41,20 @@ public interface RevisionScheduleRepository extends JpaRepository<RevisionSchedu
 
     @Query("""
             select rs from RevisionSchedule rs
+            join fetch rs.topic t
+            where rs.scheduledDate > :today
+              and rs.status = 'PENDING'
+              and rs.deletedAt is null
+              and t.deletedAt is null
+              and t.user.id = :userId
+              and t.status <> 'ARCHIVED'
+            order by rs.scheduledDate asc, t.subject asc
+            """)
+    List<RevisionSchedule> findUpcomingForUser(@Param("userId") UUID userId,
+                                               @Param("today") LocalDate today);
+
+    @Query("""
+            select rs from RevisionSchedule rs
             where rs.id = :id
               and rs.deletedAt is null
               and rs.topic.deletedAt is null
