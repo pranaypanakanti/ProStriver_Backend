@@ -1,6 +1,7 @@
 package com.ProStriver.topic;
 
 import com.ProStriver.topic.dto.TodayRevisionItemResponse;
+import com.ProStriver.topic.dto.UpcomingRevisionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,11 @@ public class RevisionController {
     @GetMapping("/today")
     public ResponseEntity<List<TodayRevisionItemResponse>> today(Authentication auth) {
         return ResponseEntity.ok(revisionService.today(auth.getName()));
+    }
+
+    @GetMapping("/upcoming")
+    public ResponseEntity<List<UpcomingRevisionResponse>> upcoming(Authentication auth) {
+        return ResponseEntity.ok(revisionService.upcoming(auth.getName()));
     }
 
     @PatchMapping("/{revisionId}/complete")

@@ -8,6 +8,7 @@ import com.ProStriver.repository.RevisionScheduleRepository;
 import com.ProStriver.repository.TopicRepository;
 import com.ProStriver.repository.UserRepository;
 import com.ProStriver.topic.dto.TodayRevisionItemResponse;
+import com.ProStriver.topic.dto.UpcomingRevisionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,28 @@ public class RevisionService {
                         rs.getTopic().getTitle(),
                         rs.getDayNumber(),
                         rs.getScheduledDate()
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UpcomingRevisionResponse> upcoming(String emailRaw) {
+        UUID userId = userRepository.findByEmail(emailRaw.toLowerCase().trim())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"))
+                .getId();
+
+        LocalDate today = LocalDate.now(clock);
+
+        return revisionScheduleRepository.findUpcomingForUser(userId, today)
+                .stream()
+                .map(rs -> new UpcomingRevisionResponse(
+                        rs.getId(),
+                        rs.getTopic().getId(),
+                        rs.getTopic().getSubject(),
+                        rs.getTopic().getTitle(),
+                        rs.getDayNumber(),
+                        rs.getScheduledDate(),
+                        rs.getStatus().name()
                 ))
                 .toList();
     }
