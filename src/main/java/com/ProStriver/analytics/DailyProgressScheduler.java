@@ -37,7 +37,7 @@ public class DailyProgressScheduler {
 
     private final Clock clock;
 
-    @Scheduled(cron = "0 10 0 * * *", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 30 0 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void computeYesterday() {
         LocalDate yesterday = LocalDate.now(clock).minusDays(1);
@@ -45,6 +45,7 @@ public class DailyProgressScheduler {
         LocalDateTime to = yesterday.plusDays(1).atStartOfDay();
 
         int totalProcessed = 0;
+        int failures = 0;
         Pageable pageable = PageRequest.of(0, BATCH_SIZE);
 
         Page<User> page;
@@ -52,26 +53,31 @@ public class DailyProgressScheduler {
             page = userRepository.findAll(pageable);
 
             for (User user : page.getContent()) {
-                int topicsCreated = (int) topicRepository.countCreatedByUserIdAndRange(user.getId(), from, to);
-                int emailed = (int) revisionScheduleRepository.countEmailedForUserAndDate(user.getId(), yesterday);
-                int completed = (int) revisionScheduleRepository.countEmailedForUserAndDateByStatus(user.getId(), yesterday, RevisionStatus.COMPLETED);
+                try {
+                    int topicsCreated = (int) topicRepository.countCreatedByUserIdAndRange(user.getId(), from, to);
+                    int emailed = (int) revisionScheduleRepository.countEmailedForUserAndDate(user.getId(), yesterday);
+                    int completed = (int) revisionScheduleRepository.countEmailedForUserAndDateByStatus(user.getId(), yesterday, RevisionStatus.COMPLETED);
 
-                DailyProgress dp = dailyProgressRepository.findByUserIdAndDate(user.getId(), yesterday)
-                        .orElseGet(DailyProgress::new);
+                    DailyProgress dp = dailyProgressRepository.findByUserIdAndDate(user.getId(), yesterday)
+                            .orElseGet(DailyProgress::new);
 
-                dp.setUser(user);
-                dp.setDate(yesterday);
-                dp.setTopicsCreated(topicsCreated);
-                dp.setRevisionsEmailed(emailed);
-                dp.setRevisionsCompleted(completed);
+                    dp.setUser(user);
+                    dp.setDate(yesterday);
+                    dp.setTopicsCreated(topicsCreated);
+                    dp.setRevisionsEmailed(emailed);
+                    dp.setRevisionsCompleted(completed);
 
-                dailyProgressRepository.save(dp);
+                    dailyProgressRepository.save(dp);
+                } catch (Exception e) {
+                    log.error("DailyProgress: failed for user {}", user.getId(), e);
+                    failures++;
+                }
             }
 
             totalProcessed += page.getNumberOfElements();
             pageable = page.nextPageable();
         } while (page.hasNext());
 
-        log.info("DailyProgress: computed {} for {} users", yesterday, totalProcessed);
+        log.info("DailyProgress: computed {} for {} users ({} failures)", yesterday, totalProcessed, failures);
     }
 }

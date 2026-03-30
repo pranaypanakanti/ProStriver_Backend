@@ -34,7 +34,7 @@ public class MonthlySummaryScheduler {
 
     private final Clock clock;
 
-    @Scheduled(cron = "0 30 0 * * *", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 30 1 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void updateMtdFromYesterday() {
         LocalDate yesterday = LocalDate.now(clock).minusDays(1);
