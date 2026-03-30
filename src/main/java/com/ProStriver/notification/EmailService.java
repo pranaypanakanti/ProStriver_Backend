@@ -1,37 +1,67 @@
 package com.ProStriver.notification;
 
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
-    @Value("${spring.mail.from:no-reply@prostriver.me}")
-    private String from;
+    private final RestTemplate restTemplate;
 
-    @Value("${spring.mail.from-name:ProStriver}")
-    private String fromName;
+    @Value("${brevo.api-key}")
+    private String brevoApiKey;
+
+    @Value("${brevo.sender-email}")
+    private String senderEmail;
+
+    @Value("${brevo.sender-name}")
+    private String senderName;
+
+    public EmailService() {
+        this.restTemplate = new RestTemplate();
+    }
 
     public void sendReminder(String toEmail, String subject, String body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("api-key", brevoApiKey);
+
+        Map<String, Object> payload = Map.of(
+                "sender", Map.of("name", senderName, "email", senderEmail),
+                "to", List.of(Map.of("email", toEmail)),
+                "subject", subject,
+                "textContent", body
+        );
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
+
         try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            ResponseEntity<String> response = restTemplate.exchange(
+                    BREVO_API_URL, HttpMethod.POST, request, String.class);
 
-            helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setText(body, false);
-            helper.setFrom(new InternetAddress(from, fromName));
-
-            mailSender.send(mimeMessage);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Email sent to {} | subject: {}", toEmail, subject);
+            } else {
+                log.error("Brevo API returned {}: {}", response.getStatusCode(), response.getBody());
+                throw new RuntimeException("Brevo API error: " + response.getStatusCode());
+            }
+        } catch (HttpClientErrorException e) {
+            log.error("Brevo API client error sending to {}: {} - {}",
+                    toEmail, e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("Failed to send email via Brevo API", e);
         } catch (Exception e) {
+            log.error("Failed to send email to {} via Brevo API", toEmail, e);
             throw new RuntimeException("Failed to send email", e);
         }
     }
