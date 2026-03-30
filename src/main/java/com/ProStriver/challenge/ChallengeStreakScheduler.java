@@ -6,6 +6,8 @@ import com.ProStriver.entity.enums.ChallengeStatus;
 import com.ProStriver.repository.DailyProgressRepository;
 import com.ProStriver.repository.LockInChallengeRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,21 +22,41 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChallengeStreakScheduler {
 
+    private static final Logger log = LoggerFactory.getLogger(ChallengeStreakScheduler.class);
+
     private final LockInChallengeRepository lockInChallengeRepository;
     private final DailyProgressRepository dailyProgressRepository;
 
     private final Clock clock;
 
-    @Scheduled(cron = "0 20 0 * * *")
+    @Scheduled(cron = "0 00 1 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void evaluateYesterday() {
         LocalDate yesterday = LocalDate.now(clock).minusDays(1);
+        log.info("ChallengeStreakScheduler: evaluating {}", yesterday);
 
         List<LockInChallenge> active = lockInChallengeRepository.findByStatus(ChallengeStatus.ACTIVE);
-        if (active.isEmpty()) return;
+        if (active.isEmpty()) {
+            log.info("ChallengeStreakScheduler: no active challenges");
+            return;
+        }
 
+        int evaluated = 0;
         for (LockInChallenge ch : active) {
+            // Skip if already evaluated for this date
             if (yesterday.equals(ch.getLastEvaluatedDate())) continue;
+
+            // Skip days before the challenge started
+            if (yesterday.isBefore(ch.getStartDate())) continue;
+
+            // Skip if challenge has already passed its end date
+            if (yesterday.isAfter(ch.getEndDate())) {
+                ch.setStatus(ChallengeStatus.FAILED);
+                ch.setLastEvaluatedDate(yesterday);
+                lockInChallengeRepository.save(ch);
+                log.info("ChallengeStreakScheduler: challenge {} past endDate, marked FAILED", ch.getId());
+                continue;
+            }
 
             DailyProgress dp = dailyProgressRepository.findByUserIdAndDate(ch.getUser().getId(), yesterday).orElse(null);
             boolean qualified = dp != null && (dp.getTopicsCreated() > 0 || dp.getRevisionsCompleted() > 0);
@@ -57,7 +79,9 @@ public class ChallengeStreakScheduler {
 
             ch.setLastEvaluatedDate(yesterday);
             lockInChallengeRepository.save(ch);
+            evaluated++;
         }
-    }
 
+        log.info("ChallengeStreakScheduler: evaluated {} challenges", evaluated);
+    }
 }

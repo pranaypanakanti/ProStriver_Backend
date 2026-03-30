@@ -101,7 +101,6 @@ public class TopicService {
         return toResponse(topic);
     }
 
-
     @Transactional(readOnly = true)
     public Page<TopicResponse> list(String emailRaw,
                                     TopicStatus status,

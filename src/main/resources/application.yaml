@@ -20,25 +20,16 @@ spring:
       hibernate:
         format_sql: true
 
-  mail:
-    host: ${MAIL_HOST:}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-    from: ${MAIL_FROM:no-reply@prostriver.me}
-    from-name: ${MAIL_FROM_NAME:ProStriver}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
 springdoc:
   api-docs:
     enabled: ${SWAGGER_ENABLED:false}
   swagger-ui:
     enabled: ${SWAGGER_ENABLED:false}
+
+brevo:
+  api-key: ${BREVO_API_KEY}
+  sender-email: ${MAIL_FROM:no-reply@prostriver.me}
+  sender-name: ${MAIL_FROM_NAME:ProStriver}
 
 prostriver:
   cors:
