@@ -25,7 +25,7 @@ public class ChallengeStreakScheduler {
 
     private final Clock clock;
 
-    @Scheduled(cron = "0 20 0 * * *")
+    @Scheduled(cron = "0 20 0 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void evaluateYesterday() {
         LocalDate yesterday = LocalDate.now(clock).minusDays(1);

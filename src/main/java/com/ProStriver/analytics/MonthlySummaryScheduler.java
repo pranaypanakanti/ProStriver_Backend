@@ -34,7 +34,7 @@ public class MonthlySummaryScheduler {
 
     private final Clock clock;
 
-    @Scheduled(cron = "0 30 0 * * *")
+    @Scheduled(cron = "0 30 0 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void updateMtdFromYesterday() {
         LocalDate yesterday = LocalDate.now(clock).minusDays(1);
@@ -52,7 +52,7 @@ public class MonthlySummaryScheduler {
             page = userRepository.findAll(pageable);
 
             for (User user : page.getContent()) {
-                Object[] sums = dailyProgressRepository.sumMtd(user.getId(), from, to);
+                Object[] sums = unwrapRow(dailyProgressRepository.sumMtd(user.getId(), from, to));
 
                 int topicsCreatedMtd = safeInt(sums, 0);
                 int revisionsCompletedMtd = safeInt(sums, 1);
@@ -80,6 +80,14 @@ public class MonthlySummaryScheduler {
         } while (page.hasNext());
 
         log.info("MonthlySummary: done for {}-{}, {} users", year, month, totalProcessed);
+    }
+
+    private Object[] unwrapRow(Object[] raw) {
+        if (raw == null) return null;
+        if (raw.length == 1 && raw[0] instanceof Object[]) {
+            return (Object[]) raw[0];
+        }
+        return raw;
     }
 
     private int safeInt(Object[] arr, int index) {

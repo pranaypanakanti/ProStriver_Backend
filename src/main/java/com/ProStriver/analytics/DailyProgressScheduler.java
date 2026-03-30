@@ -37,7 +37,7 @@ public class DailyProgressScheduler {
 
     private final Clock clock;
 
-    @Scheduled(cron = "0 10 0 * * *")
+    @Scheduled(cron = "0 10 0 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void computeYesterday() {
         LocalDate yesterday = LocalDate.now(clock).minusDays(1);

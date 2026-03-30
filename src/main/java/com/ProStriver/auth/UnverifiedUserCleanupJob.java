@@ -25,7 +25,7 @@ public class UnverifiedUserCleanupJob {
     private final OtpCodeRepository otpCodeRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Scheduled(cron = "0 0 4 * * SUN")
+    @Scheduled(cron = "0 0 4 * * SUN", zone = "Asia/Kolkata")
     @Transactional
     public void cleanupUnverifiedUsers() {
         List<User> unverified = userRepository.findAllByEmailVerifiedFalse();

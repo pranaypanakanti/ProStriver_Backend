@@ -27,7 +27,7 @@ public class RevisionEmailScheduler {
 
     private final Clock clock;
 
-    @Scheduled(cron = "0 0 8 * * *")
+    @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void sendDailyRevisionDigest() {
         LocalDate today = LocalDate.now(clock);

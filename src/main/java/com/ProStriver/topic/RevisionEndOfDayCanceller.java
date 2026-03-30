@@ -20,9 +20,9 @@ public class RevisionEndOfDayCanceller {
 
     private final RevisionScheduleRepository revisionScheduleRepository;
 
-    private final Clock clock; // NEW
+    private final Clock clock;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void cancelMissed() {
         LocalDate yesterday = LocalDate.now(clock).minusDays(1);
