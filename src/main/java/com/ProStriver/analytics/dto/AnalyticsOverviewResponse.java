@@ -21,7 +21,7 @@ public class AnalyticsOverviewResponse {
         private int completedMtd;
         private int missedMtd;
         private int emailedMtd;
-        private double rateMtd; // 0..1
+        private double rateMtd;
         private int month;
         private int year;
     }
@@ -41,7 +41,7 @@ public class AnalyticsOverviewResponse {
         private int freezeAllowed;
         private int freezeUsed;
         private int freezeRemaining;
-        private double progressPercent;   // 0..100 (currentStreak / durationDays)
-        private double completionRate;    // 0..1 (qualifiedDays / durationDays)
+        private double progressPercent;
+        private double completionRate;
     }
 }
