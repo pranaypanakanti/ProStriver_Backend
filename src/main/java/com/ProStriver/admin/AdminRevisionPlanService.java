@@ -87,4 +87,10 @@ public class AdminRevisionPlanService {
     private String normalizePattern(String p) {
         return p.trim().replaceAll("\\s+", "").replaceAll(",{2,}", ",");
     }
+
+    public AdminRevisionPlanResponse getPlanById(UUID id) {
+        RevisionPlan rp = revisionPlanRepository.findById(id)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Revision plan not found"));
+        return toResponse(rp);
+    }
 }
