@@ -20,12 +20,12 @@ public class AdminRevisionPlanController {
 
     private final AdminRevisionPlanService adminRevisionPlanService;
 
-    @GetMapping
+    @GetMapping("/get-all")
     public ResponseEntity<List<AdminRevisionPlanResponse>> list() {
         return ResponseEntity.ok(adminRevisionPlanService.list());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get-by-id/{id}")
     public ResponseEntity<AdminRevisionPlanResponse> getPlanById(@PathVariable UUID id) {
         return ResponseEntity.ok(adminRevisionPlanService.getPlanById(id));
     }

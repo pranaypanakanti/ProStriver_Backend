@@ -50,7 +50,6 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests(auth -> auth
-                // Protected auth endpoints (require valid access token)
                 .requestMatchers(
                         "/api/auth/logout-all",
                         "/api/auth/change-password"
@@ -64,7 +63,8 @@ public class SecurityConfig {
                         "/api/auth/logout",
                         "/api/auth/forgot-password",
                         "/api/auth/reset-password",
-                        "/api/admin/revision-plans",
+                        "/api/admin/revision-plans/get-all",
+                        "/api/admin/revision-plans/get-by-id/**",
                         "/api/admin/health-check"
                 ).permitAll()
                 .requestMatchers(
