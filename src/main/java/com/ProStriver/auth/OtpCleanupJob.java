@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class OtpCleanupJob {
 
     private static final Logger log = LoggerFactory.getLogger(OtpCleanupJob.class);
-    private static final int REVOKED_RETENTION_DAYS = 7;
+    private static final int REVOKED_RETENTION_DAYS = 2;
 
     private final OtpCodeRepository otpCodeRepository;
     private final RefreshTokenRepository refreshTokenRepository;
