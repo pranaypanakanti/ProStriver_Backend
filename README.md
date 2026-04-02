@@ -24,9 +24,10 @@
 
 <!-- Add your screenshots below. Replace the placeholder URLs with actual image paths. -->
 
-| Home | Dashboard |
+| Dashboard | Revisions |
 |:---------:|:------:|
-|<img width="850" height="362" alt="Screenshot 2026-04-02 111120" src="https://github.com/user-attachments/assets/db53750c-72ac-4e52-ac3b-17eb481895f0" />|<img width="640" height="360" alt="Screenshot 2026-04-02 105826" src="https://github.com/user-attachments/assets/2a6923d4-a98c-43d5-bc42-a18124fa53b7" />|
+|<img width="640" height="360" alt="Screenshot 2026-04-02 105826" src="https://github.com/user-attachments/assets/2a6923d4-a98c-43d5-bc42-a18124fa53b7" />|<img width="720" height="480" alt="Screenshot 2026-04-02 112517" src="https://github.com/user-attachments/assets/9f701aeb-bb88-47ce-859f-75b4ea86df86" />
+|
 
 | Challenge Streak | Email Reminder |
 |:----------------:|:--------------:|
