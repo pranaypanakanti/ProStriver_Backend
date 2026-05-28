@@ -4,6 +4,10 @@ spring:
   profiles:
     active: api
 
+  data:
+    redis:
+      url: ${REDIS_URI}
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
