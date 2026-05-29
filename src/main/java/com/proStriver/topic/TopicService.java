@@ -1,5 +1,6 @@
 package com.proStriver.topic;
 
+import com.proStriver.common.Redis.RedisService;
 import com.proStriver.common.exception.ApiException;
 import com.proStriver.entity.RevisionPlan;
 import com.proStriver.entity.RevisionSchedule;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,7 @@ public class TopicService {
     private final UserRepository userRepository;
     private final RevisionPlanRepository revisionPlanRepository;
     private final RevisionScheduleRepository revisionScheduleRepository;
+    private final RedisService redisService;
 
     private final Clock clock;
 
@@ -58,8 +61,6 @@ public class TopicService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Provide either revisionPlanId or manualReminderPattern, not both");
         }
 
-        // Use server date as the base for schedule calculation.
-        // This avoids relying on JPA @PrePersist timing for createdAt.
         LocalDate baseDate = LocalDate.now(clock);
 
         if (hasPlan) {
@@ -165,6 +166,10 @@ public class TopicService {
         User user = getUserByEmail(emailRaw);
         Topic topic = topicRepository.findActiveByIdAndUserId(topicId, user.getId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Topic not found"));
+
+        String key = "revisions:upcoming:user:" + String.valueOf(user.getId());
+
+        redisService.delete(key);
 
         if (topic.getStatus() == TopicStatus.ARCHIVED) return;
 

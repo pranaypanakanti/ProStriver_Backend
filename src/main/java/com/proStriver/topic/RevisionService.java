@@ -1,5 +1,7 @@
 package com.proStriver.topic;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.proStriver.common.Redis.RedisService;
 import com.proStriver.common.exception.ApiException;
 import com.proStriver.entity.RevisionSchedule;
 import com.proStriver.entity.enums.RevisionStatus;
@@ -10,10 +12,12 @@ import com.proStriver.repository.UserRepository;
 import com.proStriver.topic.dto.TodayRevisionItemResponse;
 import com.proStriver.topic.dto.UpcomingRevisionResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Type;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,6 +33,9 @@ public class RevisionService {
     private final TopicRepository topicRepository;
     private final Clock clock;
 
+    @Autowired
+    private RedisService redisService;
+
     @Transactional(readOnly = true)
     public List<TodayRevisionItemResponse> today(String emailRaw) {
         UUID userId = userRepository.findByEmail(emailRaw.toLowerCase().trim())
@@ -37,7 +44,17 @@ public class RevisionService {
 
         LocalDate today = LocalDate.now(clock);
 
-        return revisionScheduleRepository.findTodayForUser(userId, today, RevisionStatus.PENDING)
+        String key = "revisions:today:user:" + String.valueOf(userId);
+
+        List<TodayRevisionItemResponse> responses = redisService.get(
+                key,
+                new TypeReference<List<TodayRevisionItemResponse>>(){}
+        );
+        if(responses != null) {
+            return responses;
+        }
+
+        List<TodayRevisionItemResponse> revisions = revisionScheduleRepository.findTodayForUser(userId, today, RevisionStatus.PENDING)
                 .stream()
                 .map(rs -> new TodayRevisionItemResponse(
                         rs.getId(),
@@ -48,6 +65,14 @@ public class RevisionService {
                         rs.getScheduledDate()
                 ))
                 .toList();
+
+        if(!revisions.isEmpty()) {
+            redisService.set(key,
+                    revisions,
+                    10L);
+        }
+
+        return revisions;
     }
 
     @Transactional(readOnly = true)
@@ -58,7 +83,17 @@ public class RevisionService {
 
         LocalDate today = LocalDate.now(clock);
 
-        return revisionScheduleRepository.findUpcomingForUser(userId, today)
+        String key = "revisions:upcoming:user:" + String.valueOf(userId);
+
+        List<UpcomingRevisionResponse> responses = redisService.get(
+                key,
+                new TypeReference<List<UpcomingRevisionResponse>>(){}
+        );
+        if(responses != null) {
+            return responses;
+        }
+
+        List<UpcomingRevisionResponse> revisions = revisionScheduleRepository.findUpcomingForUser(userId, today)
                 .stream()
                 .map(rs -> new UpcomingRevisionResponse(
                         rs.getId(),
@@ -70,6 +105,15 @@ public class RevisionService {
                         rs.getStatus().name()
                 ))
                 .toList();
+
+        if(!revisions.isEmpty()) {
+            redisService.set(
+                    key,
+                    revisions,
+                    10L
+            );
+        }
+        return revisions;
     }
 
     @Transactional
@@ -77,6 +121,13 @@ public class RevisionService {
         UUID userId = userRepository.findByEmail(emailRaw.toLowerCase().trim())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"))
                 .getId();
+
+        String key1 = "revisions:today:user:" + String.valueOf(userId);
+        String key2 = "revisions:upcoming:user:" + String.valueOf(userId);
+
+        redisService.delete(key1);
+        redisService.delete(key2);
+
 
         RevisionSchedule rs = revisionScheduleRepository.findActiveByIdAndUserId(revisionScheduleId, userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Revision not found"));
