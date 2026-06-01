@@ -1,6 +1,12 @@
 spring:
   application:
     name: ProStriver
+  profiles:
+    active: api
+
+  data:
+    redis:
+      url: ${REDIS_URI}
 
   datasource:
     url: ${DB_URL}
