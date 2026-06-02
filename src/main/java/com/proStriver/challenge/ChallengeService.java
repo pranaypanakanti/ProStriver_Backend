@@ -1,7 +1,7 @@
 package com.proStriver.challenge;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.proStriver.common.Redis.RedisService;
+import com.proStriver.common.redis.RedisService;
 import com.proStriver.common.exception.ApiException;
 import com.proStriver.entity.DailyProgress;
 import com.proStriver.entity.LockInChallenge;
@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Type;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.proStriver.common.Redis;
+package com.proStriver.common.redis;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
