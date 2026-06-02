@@ -1,5 +1,7 @@
 package com.proStriver.challenge;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.proStriver.common.Redis.RedisService;
 import com.proStriver.common.exception.ApiException;
 import com.proStriver.entity.DailyProgress;
 import com.proStriver.entity.LockInChallenge;
@@ -12,10 +14,12 @@ import com.proStriver.repository.UserRepository;
 import com.proStriver.challenge.dto.ChallengeMeResponse;
 import com.proStriver.challenge.dto.ChallengePlanResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Type;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,16 +31,34 @@ public class ChallengeService {
     private final UserRepository userRepository;
     private final LockInChallengeRepository lockInChallengeRepository;
     private final DailyProgressRepository dailyProgressRepository;
+    private final RedisService redisService;
 
     private final Clock clock;
+    private final ListableBeanFactory listableBeanFactory;
 
     public List<ChallengePlanResponse> plans() {
-        return List.of(
+
+        String key = "challenge:plans";
+
+        List<ChallengePlanResponse> response = redisService.get(
+                key,
+                new TypeReference<List<ChallengePlanResponse>>() {}
+        );
+
+        if(response != null) {
+            return response;
+        }
+
+        List<ChallengePlanResponse> plans = List.of(
                 plan(ChallengeType.THIRTY_DAY),
                 plan(ChallengeType.HUNDRED_DAY),
                 plan(ChallengeType.TWO_HUNDRED_DAY),
                 plan(ChallengeType.THREE_SIXTY_FIVE_DAY)
         );
+
+        redisService.set(key, plans, 15L);
+
+        return plans;
     }
 
     @Transactional
@@ -74,10 +96,25 @@ public class ChallengeService {
     public ChallengeMeResponse me(String emailRaw) {
         User user = getUser(emailRaw);
 
+        String key = "challenge:response:user:" + String.valueOf(user.getId());
+
+        ChallengeMeResponse response = redisService.get(
+                key,
+                new TypeReference<ChallengeMeResponse>() {}
+        );
+
+        if(response != null) {
+            return response;
+        }
+
         LockInChallenge ch = lockInChallengeRepository.findByUserIdAndStatus(user.getId(), ChallengeStatus.ACTIVE)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "No ACTIVE challenge found"));
 
-        return toMeResponse(ch);
+        ChallengeMeResponse myChallenge = toMeResponse(ch);
+
+        redisService.set(key, myChallenge, 10L);
+
+        return myChallenge;
     }
 
     @Transactional
