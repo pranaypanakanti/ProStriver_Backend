@@ -1,6 +1,6 @@
 package com.proStriver.topic;
 
-import com.proStriver.common.Redis.RedisService;
+import com.proStriver.common.redis.RedisService;
 import com.proStriver.common.exception.ApiException;
 import com.proStriver.entity.RevisionPlan;
 import com.proStriver.entity.RevisionSchedule;
@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

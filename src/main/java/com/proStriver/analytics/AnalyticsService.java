@@ -1,6 +1,8 @@
 package com.proStriver.analytics;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.proStriver.analytics.dto.AnalyticsOverviewResponse;
+import com.proStriver.common.redis.RedisService;
 import com.proStriver.common.exception.ApiException;
 import com.proStriver.entity.DailyProgress;
 import com.proStriver.entity.LockInChallenge;
@@ -28,6 +30,7 @@ public class AnalyticsService {
     private final MonthlySummaryRepository monthlySummaryRepository;
     private final LockInChallengeRepository lockInChallengeRepository;
     private final DailyProgressRepository dailyProgressRepository;
+    private final RedisService redisService;
 
     private final Clock clock;
 
@@ -36,6 +39,13 @@ public class AnalyticsService {
         User user = userRepository.findByEmail(emailRaw.toLowerCase().trim())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
 
+        String key = "analytics:overview:user:" + String.valueOf(user.getId());
+
+        AnalyticsOverviewResponse response = redisService.get(key, new TypeReference<AnalyticsOverviewResponse>() {});
+
+        if(response != null) {
+            return response;
+        }
         LocalDate today = LocalDate.now(clock);
         int month = today.getMonthValue();
         int year = today.getYear();
@@ -107,7 +117,15 @@ public class AnalyticsService {
             );
         }
 
-        return new AnalyticsOverviewResponse(gauge, challengeInfo);
+        AnalyticsOverviewResponse overviewResponse = new AnalyticsOverviewResponse(gauge, challengeInfo);
+
+        redisService.set(
+                key,
+                overviewResponse,
+                10L
+        );
+
+        return overviewResponse;
     }
 
 }
