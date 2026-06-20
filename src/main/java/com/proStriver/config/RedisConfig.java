@@ -31,6 +31,7 @@ public class RedisConfig {
         String password = uri.getUserInfo() != null
                 ? uri.getUserInfo().split(":")[1]
                 : null;
+        boolean useSsl = "rediss".equalsIgnoreCase(uri.getScheme());
 
         RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration();
         serverConfig.setHostName(host);
@@ -53,6 +54,10 @@ public class RedisConfig {
                 LettuceClientConfiguration.builder()
                         .commandTimeout(Duration.ofSeconds(3))
                         .clientOptions(clientOptions);
+
+        if (useSsl) {
+            clientConfigBuilder.useSsl();
+        }
 
         return new LettuceConnectionFactory(serverConfig, clientConfigBuilder.build());
     }
