@@ -23,12 +23,11 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
 
-        // Must be explicit origins when allowCredentials=true
         cfg.setAllowedOrigins(corsProperties.getAllowedOrigins());
 
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        cfg.setExposedHeaders(List.of("Set-Cookie")); // optional
+        cfg.setExposedHeaders(List.of("Set-Cookie"));
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(3600L);
 

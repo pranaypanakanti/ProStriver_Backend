@@ -238,7 +238,6 @@ public class AuthService {
     public MessageResponse forgotPassword(ForgotPasswordRequest req) {
         String email = req.getEmail().toLowerCase().trim();
 
-        // Do not leak existence; only send if user exists + verified
         userRepository.findByEmail(email).ifPresent(u -> {
             if (u.isEmailVerified()) {
                 sendOtpInternal(email, OtpPurpose.FORGOT_PASSWORD);
@@ -259,7 +258,6 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);
 
-        // revoke all active refresh tokens
         revokeAllActiveRefreshTokens(user.getId());
 
         return new MessageResponse("Password reset successful.");
@@ -278,7 +276,6 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);
 
-        // revoke all active refresh tokens
         revokeAllActiveRefreshTokens(user.getId());
 
         return new MessageResponse("Password changed successfully.");
