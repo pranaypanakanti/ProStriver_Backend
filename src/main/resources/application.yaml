@@ -46,7 +46,7 @@ prostriver:
     jwt:
       issuer: "prostriver-api"
       access-token-minutes: 30
-      refresh-token-days: 30
+      refresh-token-days: 90
       secret-base64: ${JWT_SECRET_BASE64}
     cookies:
       refresh-token-name: "prostriver_rt"

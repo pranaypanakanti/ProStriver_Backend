@@ -43,13 +43,10 @@ public class ChallengeStreakScheduler {
 
         int evaluated = 0;
         for (LockInChallenge ch : active) {
-            // Skip if already evaluated for this date
             if (yesterday.equals(ch.getLastEvaluatedDate())) continue;
 
-            // Skip days before the challenge started
             if (yesterday.isBefore(ch.getStartDate())) continue;
 
-            // Skip if challenge has already passed its end date
             if (yesterday.isAfter(ch.getEndDate())) {
                 ch.setStatus(ChallengeStatus.FAILED);
                 ch.setLastEvaluatedDate(yesterday);

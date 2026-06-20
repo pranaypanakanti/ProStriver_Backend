@@ -94,7 +94,7 @@ public class RevisionEmailScheduler {
                     .append(" (Day ").append(rs.getDayNumber()).append(")\n");
         }
 
-        sb.append("\nOpen ProStriver to mark revisions as completed.\n\n");
+        sb.append("\nOpen prostriver.me to mark revisions as completed.\n\n");
         sb.append("Regards,\nProStriver Team\n");
         return sb.toString();
     }

@@ -26,10 +26,10 @@ public class TopicController {
 
     private final TopicService topicService;
 
-    @GetMapping("/ml-summary")
-    public ResponseEntity<List<TopicMlSummaryResponse>> mlSummary(Authentication auth) {
-        return ResponseEntity.ok(topicService.mlSummary(auth.getName()));
-    }
+//    @GetMapping("/ml-summary")
+//    public ResponseEntity<List<TopicMlSummaryResponse>> mlSummary(Authentication auth) {
+//        return ResponseEntity.ok(topicService.mlSummary(auth.getName()));
+//    }
 
     @PostMapping
     public ResponseEntity<TopicResponse> create(Authentication auth, @Valid @RequestBody CreateTopicRequest req) {
