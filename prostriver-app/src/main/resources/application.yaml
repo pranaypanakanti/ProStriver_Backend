@@ -1,6 +1,8 @@
 spring:
+
   application:
     name: ProStriver
+
   profiles:
     active: api
 
@@ -26,6 +28,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
 
 springdoc:
   api-docs:
@@ -65,5 +68,6 @@ server:
     session:
       cookie:
         http-only: true
+
 
 
