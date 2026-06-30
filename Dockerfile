@@ -1,13 +1,14 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-COPY pom.xml .
 COPY .mvn .mvn
 COPY mvnw mvnw
+COPY pom.xml .
+COPY prostriver-app/pom.xml prostriver-app/pom.xml
+COPY prostriver-app/src prostriver-app/src
+COPY prostriver-planner/pom.xml prostriver-planner/pom.xml
+COPY prostriver-planner/src prostriver-planner/src
 RUN chmod +x mvnw
-RUN ./mvnw -q -DskipTests dependency:go-offline
-
-COPY src src
 RUN ./mvnw -q -DskipTests package
 
 FROM eclipse-temurin:21-jre
@@ -16,7 +17,7 @@ WORKDIR /app
 RUN useradd -ms /bin/bash appuser
 USER appuser
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/prostriver-app/target/*.jar app.jar
 
 EXPOSE 8080
 
