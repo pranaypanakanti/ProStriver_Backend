@@ -12,7 +12,6 @@ public class KafkaTopicConfig {
     public NewTopic studyPlanTopic() {
         return TopicBuilder.name("study-plan-jobs")
                 .partitions(2)
-                .replicas(1)
                 .build();
     }
 
