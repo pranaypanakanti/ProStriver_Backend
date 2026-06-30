@@ -6,6 +6,9 @@ import com.springAi.ratelimit.RateLimitResult;
 import com.springAi.ratelimit.RateLimitService;
 import com.springAi.studyPlanner.job.StudyPlanJobResponse;
 import com.springAi.studyPlanner.job.StudyPlanJobService;
+import com.springAi.studyPlanner.job.StudyPlanProgressResponse;
+import com.springAi.studyPlanner.job.SubtopicUpdateResult;
+import jakarta.validation.Valid;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,5 +62,34 @@ public class StudyPlanController {
                 .map(StudyPlanJobResponse::from)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{jobId}/start")
+    public ResponseEntity<StudyPlanProgressResponse> start(
+            @PathVariable String jobId,
+            @AuthenticationPrincipal ProStriverUserDetails user) {
+
+        String userId = user.getUserId().toString();
+        return jobService.startPreparation(jobId, userId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{jobId}/subtopic/{subtopicId}")
+    public ResponseEntity<StudyPlanProgressResponse> setSubtopicStatus(
+            @PathVariable String jobId,
+            @PathVariable String subtopicId,
+            @AuthenticationPrincipal ProStriverUserDetails user,
+            @Valid @RequestBody SubtopicStatusRequest req) {
+
+        String userId = user.getUserId().toString();
+        SubtopicUpdateResult result =
+                jobService.setSubtopicDone(jobId, userId, subtopicId, req.done());
+
+        return switch (result.outcome()) {
+            case UPDATED   -> ResponseEntity.ok(result.progress());
+            case NOT_READY -> ResponseEntity.status(HttpStatus.CONFLICT).build();
+            case NOT_FOUND -> ResponseEntity.notFound().build();
+        };
     }
 }
