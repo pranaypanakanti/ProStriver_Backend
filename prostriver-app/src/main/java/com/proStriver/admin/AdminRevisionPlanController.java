@@ -32,9 +32,4 @@ public class AdminRevisionPlanController {
         return ResponseEntity.ok(adminRevisionPlanService.update(id, req));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        adminRevisionPlanService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 }
