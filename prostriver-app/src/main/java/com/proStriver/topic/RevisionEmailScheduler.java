@@ -1,25 +1,19 @@
 package com.proStriver.topic;
 
-import com.proStriver.entity.RevisionSchedule;
-import com.proStriver.entity.User;
 import com.proStriver.entity.enums.NotificationPreference;
-import com.proStriver.entity.enums.RevisionStatus;
 import com.proStriver.notification.EmailService;
-import com.proStriver.repository.RevisionScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Profile("worker")
 @Component
@@ -28,70 +22,60 @@ public class RevisionEmailScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(RevisionEmailScheduler.class);
 
-    private final RevisionScheduleRepository revisionScheduleRepository;
+    private final RevisionDigestService revisionDigestService;
     private final EmailService emailService;
     private final Clock clock;
 
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Kolkata")
-    @Transactional
     public void sendDailyRevisionDigest() {
         LocalDate today = LocalDate.now(clock);
         log.info("RevisionEmailScheduler: starting digest for {}", today);
 
-        List<RevisionSchedule> due = revisionScheduleRepository.findDueForEmail(today, RevisionStatus.PENDING);
-        if (due.isEmpty()) {
+        List<RevisionDigestData> digests = revisionDigestService.loadDueGrouped(today);
+        if (digests.isEmpty()) {
             log.info("RevisionEmailScheduler: no revisions due for {}", today);
             return;
         }
 
-        log.info("RevisionEmailScheduler: found {} due revisions", due.size());
+        int dueCount = digests.stream().mapToInt(d -> d.items().size()).sum();
+        log.info("RevisionEmailScheduler: found {} due revisions", dueCount);
 
-        Map<User, List<RevisionSchedule>> byUser = due.stream()
-                .collect(Collectors.groupingBy(rs -> rs.getTopic().getUser()));
+        List<UUID> sentIds = new ArrayList<>();
 
-        List<RevisionSchedule> sent = new ArrayList<>();
-
-        for (Map.Entry<User, List<RevisionSchedule>> entry : byUser.entrySet()) {
-            User user = entry.getKey();
-            List<RevisionSchedule> items = entry.getValue();
-
-            if (user.getNotificationPreference() == NotificationPreference.NONE) {
-                sent.addAll(items);
+        for (RevisionDigestData d : digests) {
+            if (d.preference() == NotificationPreference.NONE) {
+                sentIds.addAll(d.scheduleIds());
                 log.info("RevisionEmailScheduler: skipped {} (preference=NONE), {} items",
-                        user.getEmail(), items.size());
+                        d.email(), d.items().size());
                 continue;
             }
-
             try {
                 String subject = "ProStriver - Topics to revise today (" + today + ")";
-                String body = buildDigestBody(items, today);
-                emailService.sendReminder(user.getEmail(), subject, body);
-                sent.addAll(items);
-                log.info("RevisionEmailScheduler: sent to {} ({} items)", user.getEmail(), items.size());
+                String body = buildDigestBody(d.items(), today);
+                emailService.sendReminder(d.email(), subject, body);
+                sentIds.addAll(d.scheduleIds());
+                log.info("RevisionEmailScheduler: sent to {} ({} items)", d.email(), d.items().size());
             } catch (Exception e) {
-                // Per-user isolation: other users still get their emails
-                log.error("RevisionEmailScheduler: failed to send to {}", user.getEmail(), e);
+                log.error("RevisionEmailScheduler: failed to send to {}", d.email(), e);
             }
         }
 
-        sent.forEach(rs -> rs.setNotificationSent(true));
-        revisionScheduleRepository.saveAll(sent);
-
-        log.info("RevisionEmailScheduler: completed. Notified for {}/{} schedules", sent.size(), due.size());
+        revisionDigestService.markNotified(sentIds);
+        log.info("RevisionEmailScheduler: completed. Notified for {}/{} schedules", sentIds.size(), dueCount);
     }
 
-    private String buildDigestBody(List<RevisionSchedule> items, LocalDate today) {
+    private String buildDigestBody(List<RevisionDigestData.Item> items, LocalDate today) {
         StringBuilder sb = new StringBuilder();
         sb.append("Hello,\n\n");
         sb.append("Here are your topics to revise today (").append(today).append("):\n\n");
 
         int i = 1;
-        for (RevisionSchedule rs : items) {
+        for (RevisionDigestData.Item item : items) {
             sb.append(i++).append(") ")
-                    .append(rs.getTopic().getSubject())
+                    .append(item.subject())
                     .append(" - ")
-                    .append(rs.getTopic().getTitle())
-                    .append(" (Day ").append(rs.getDayNumber()).append(")\n");
+                    .append(item.title())
+                    .append(" (Day ").append(item.dayNumber()).append(")\n");
         }
 
         sb.append("\nOpen prostriver.me to mark revisions as completed.\n\n");
