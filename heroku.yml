@@ -1,0 +1,5 @@
+build:
+  docker:
+    worker: Dockerfile.worker
+run:
+  worker: java $JAVA_OPTS -jar /app/app.jar
