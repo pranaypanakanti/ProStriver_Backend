@@ -220,7 +220,6 @@ java -jar prostriver-app/target/*.jar --spring.profiles.active=worker
 
 > The `api` profile loads Kafka, MongoDB, and Gemini; the `worker` profile excludes them and runs only the schedulers.
 
-📖 **Local API:** [Swagger UI](https://prostriver.me/swagger-ui.html) &nbsp;
 ---
 
 ## 🔄 CI/CD
