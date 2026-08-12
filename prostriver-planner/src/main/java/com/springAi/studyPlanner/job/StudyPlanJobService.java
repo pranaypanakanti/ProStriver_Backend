@@ -1,10 +1,12 @@
 package com.springAi.studyPlanner.job;
 
+import com.mongodb.client.result.DeleteResult;
 import com.springAi.kafka.StudyPlanProducer;
 import com.springAi.kafka.StudyPlanRequest;
 import com.springAi.studyPlanner.entities.MainTopic;
 import com.springAi.studyPlanner.entities.StudyPlanResponse;
 import com.springAi.studyPlanner.entities.SubTopic;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -13,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -115,4 +118,22 @@ public class StudyPlanJobService {
         }
         return false;
     }
+
+    public List<StudyPlanSummaryResponse> listUserPlans(String userId) {
+        Query q = Query.query(Criteria.where("userId").is(userId))
+                .with(Sort.by(Sort.Direction.DESC, "createdAt"));
+        q.fields().exclude("plan");                 // never load the big blob for a list
+
+        return mongoTemplate.find(q, StudyPlanJob.class)
+                .stream()
+                .map(StudyPlanSummaryResponse::from)
+                .toList();
+    }
+
+    public boolean deletePlan(String jobId, String userId) {
+        Query q = Query.query(Criteria.where("jobId").is(jobId).and("userId").is(userId));
+        DeleteResult result = mongoTemplate.remove(q, StudyPlanJob.class);
+        return result.getDeletedCount() > 0;
+    }
+
 }

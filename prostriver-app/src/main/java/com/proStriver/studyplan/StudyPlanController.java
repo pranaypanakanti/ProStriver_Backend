@@ -4,10 +4,7 @@ import com.proStriver.security.ProStriverUserDetails;
 import com.springAi.kafka.StudyPlanRequest;
 import com.springAi.ratelimit.RateLimitResult;
 import com.springAi.ratelimit.RateLimitService;
-import com.springAi.studyPlanner.job.StudyPlanJobResponse;
-import com.springAi.studyPlanner.job.StudyPlanJobService;
-import com.springAi.studyPlanner.job.StudyPlanProgressResponse;
-import com.springAi.studyPlanner.job.SubtopicUpdateResult;
+import com.springAi.studyPlanner.job.*;
 import jakarta.validation.Valid;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
@@ -15,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -92,4 +90,24 @@ public class StudyPlanController {
             case NOT_FOUND -> ResponseEntity.notFound().build();
         };
     }
+
+    @GetMapping
+    public ResponseEntity<List<StudyPlanSummaryResponse>> listPlans(
+            @AuthenticationPrincipal ProStriverUserDetails user) {
+
+        String userId = user.getUserId().toString();
+        return ResponseEntity.ok(jobService.listUserPlans(userId));
+    }
+
+    @DeleteMapping("/{jobId}")
+    public ResponseEntity<Void> deletePlan(
+            @PathVariable String jobId,
+            @AuthenticationPrincipal ProStriverUserDetails user) {
+
+        String userId = user.getUserId().toString();
+        boolean deleted = jobService.deletePlan(jobId, userId);
+        return deleted ? ResponseEntity.noContent().build()      // 204
+                : ResponseEntity.notFound().build();       // 404
+    }
+
 }
