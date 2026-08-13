@@ -26,6 +26,10 @@ gemini:
   api-keys: ${GEMINI_API_KEYS}
   model: gemini-2.5-flash
 
+management:
+  server:
+    port: 9091
+
 prostriver:
   scheduling:
     enabled: false

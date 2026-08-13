@@ -1,0 +1,22 @@
+package com.prostriver.analytics;
+
+import com.prostriver.analytics.dto.AnalyticsOverviewResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+@Profile("api")
+@RestController
+@RequestMapping("/api/analytics")
+@RequiredArgsConstructor
+public class AnalyticsController {
+
+    private final AnalyticsService analyticsService;
+
+    @GetMapping("/overview")
+    public ResponseEntity<AnalyticsOverviewResponse> overview(Authentication auth) {
+        return ResponseEntity.ok(analyticsService.overview(auth.getName()));
+    }
+}
