@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @Configuration
 @Profile("api")
-@ComponentScan(basePackages = "com.spring_ai")
-@EnableMongoRepositories(basePackages = "com.spring_ai")
+@ComponentScan(basePackages = "com.springai")
+@EnableMongoRepositories(basePackages = "com.springai")
 public class PlannerConfig {
 }

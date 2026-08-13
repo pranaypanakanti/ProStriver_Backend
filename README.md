@@ -179,7 +179,7 @@ prostriver-parent/                       ← parent POM (packaging: pom)
 │       ├── entity/  repository/          ← JPA entities & Spring Data repos
 │       └── common/                       ← global exception handler, Redis service, crypto
 │
-└── prostriver-planner/                   ← AI library module  (com.spring_ai)
+└── prostriver-planner/                   ← AI library module  (com.springai)
     └── src/main/java/com/springAi/
         ├── studyPlanner/                 ← Gemini study-plan service + entities + job model
         ├── kafka/                        ← producer, consumer, topic & error-handler config

@@ -1,10 +1,10 @@
 package com.prostriver.studyplan;
 
 import com.prostriver.security.ProStriverUserDetails;
-import com.spring_ai.kafka.StudyPlanRequest;
-import com.spring_ai.ratelimit.RateLimitResult;
-import com.spring_ai.ratelimit.RateLimitService;
-import com.spring_ai.study_planner.job.*;
+import com.springai.kafka.StudyPlanRequest;
+import com.springai.ratelimit.RateLimitResult;
+import com.springai.ratelimit.RateLimitService;
+import com.springai.study_planner.job.*;
 import jakarta.validation.Valid;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
