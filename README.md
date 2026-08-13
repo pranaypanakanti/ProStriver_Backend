@@ -169,7 +169,7 @@ Maven multi-module — `prostriver-app` (the runnable API + workers) depends on 
 
 ```
 prostriver-parent/                       ← parent POM (packaging: pom)
-├── prostriver-app/                       ← Spring Boot app → fat JAR  (com.proStriver)
+├── prostriver-app/                       ← Spring Boot app → fat JAR  (com.prostriver)
 │   └── src/main/java/com/proStriver/
 │       ├── auth/  topic/  challenge/     ← core domains (controllers, services, schedulers)
 │       ├── analytics/  user/  admin/
@@ -179,7 +179,7 @@ prostriver-parent/                       ← parent POM (packaging: pom)
 │       ├── entity/  repository/          ← JPA entities & Spring Data repos
 │       └── common/                       ← global exception handler, Redis service, crypto
 │
-└── prostriver-planner/                   ← AI library module  (com.springAi)
+└── prostriver-planner/                   ← AI library module  (com.spring_ai)
     └── src/main/java/com/springAi/
         ├── studyPlanner/                 ← Gemini study-plan service + entities + job model
         ├── kafka/                        ← producer, consumer, topic & error-handler config

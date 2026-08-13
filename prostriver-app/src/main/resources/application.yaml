@@ -69,5 +69,14 @@ server:
       cookie:
         http-only: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
 
 

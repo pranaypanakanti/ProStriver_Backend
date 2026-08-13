@@ -38,3 +38,9 @@ Thumbs.db
 *.swp
 
 .env
+
+CLAUDE.md
+.claude/
+
+/prostriver-app/src/test/resources/reports
+/prostriver-planner/src/test/resources/reports
