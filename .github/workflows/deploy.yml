@@ -44,27 +44,24 @@ jobs:
           script: |
             set -e
             cd ~/prostriver
-
+            
             test -f docker-compose.api.yml || { echo "❌ docker-compose.api.yml missing"; exit 1; }
             test -f config.alloy || { echo "❌ config.alloy missing"; exit 1; }
-
-            # Capture running image digest BEFORE deploy
+            
             OLD=$(docker inspect prostriver-api --format '{{.Image}}' 2>/dev/null || echo none)
-
+            
             docker compose -f docker-compose.api.yml pull
-            docker compose -f docker-compose.api.yml up -d --force-recreate
-
-            # Verify the API container is actually running the NEW image
+            docker compose -f docker-compose.api.yml up -d --force-recreate --remove-orphans
+            
             sleep 5
             NEW=$(docker inspect prostriver-api --format '{{.Image}}')
             echo "old image: $OLD"
             echo "new image: $NEW"
             [ "$OLD" != "$NEW" ] || echo "⚠️ WARNING: image did not change — deploy may be a no-op"
-
-            # Fail loudly if either container isn't up
+            
             docker ps --filter name=prostriver-api --filter status=running | grep prostriver-api || { echo "❌ prostriver-api not running after deploy"; exit 1; }
             docker ps --filter name=prostriver-alloy --filter status=running | grep prostriver-alloy || { echo "❌ prostriver-alloy not running after deploy"; exit 1; }
-
+            
             docker image prune -f
 
   deploy-worker:
