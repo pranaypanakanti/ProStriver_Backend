@@ -25,6 +25,15 @@ jobs:
           push: true
           tags: pranaypanakanti/prostriver:latest
 
+      - name: Copy compose & Alloy config to EC2
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.api.yml,config.alloy"
+          target: "~/prostriver"
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1
         with:
@@ -33,9 +42,29 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
+            set -e
             cd ~/prostriver
+
+            test -f docker-compose.api.yml || { echo "❌ docker-compose.api.yml missing"; exit 1; }
+            test -f config.alloy || { echo "❌ config.alloy missing"; exit 1; }
+
+            # Capture running image digest BEFORE deploy
+            OLD=$(docker inspect prostriver-api --format '{{.Image}}' 2>/dev/null || echo none)
+
             docker compose -f docker-compose.api.yml pull
             docker compose -f docker-compose.api.yml up -d --force-recreate
+
+            # Verify the API container is actually running the NEW image
+            sleep 5
+            NEW=$(docker inspect prostriver-api --format '{{.Image}}')
+            echo "old image: $OLD"
+            echo "new image: $NEW"
+            [ "$OLD" != "$NEW" ] || echo "⚠️ WARNING: image did not change — deploy may be a no-op"
+
+            # Fail loudly if either container isn't up
+            docker ps --filter name=prostriver-api --filter status=running | grep prostriver-api || { echo "❌ prostriver-api not running after deploy"; exit 1; }
+            docker ps --filter name=prostriver-alloy --filter status=running | grep prostriver-alloy || { echo "❌ prostriver-alloy not running after deploy"; exit 1; }
+
             docker image prune -f
 
   deploy-worker:

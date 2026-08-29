@@ -15,3 +15,16 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: prostriver-alloy
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - /etc/alloy/config.alloy
