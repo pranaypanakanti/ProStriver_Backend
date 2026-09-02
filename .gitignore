@@ -42,5 +42,7 @@ Thumbs.db
 CLAUDE.md
 .claude/
 
-/prostriver-app/src/test/resources/reports
-/prostriver-planner/src/test/resources/reports
+/prostriver-app/src/test
+/prostriver-planner/src/test
+/docs/rag_content
+/docs/Ask-ProStriver-Build-Plan.pdf
