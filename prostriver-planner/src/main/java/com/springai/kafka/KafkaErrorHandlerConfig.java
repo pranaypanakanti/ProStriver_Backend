@@ -32,19 +32,24 @@ public class KafkaErrorHandlerConfig {
         );
 
         ConsumerRecordRecoverer recoverer = (record, ex) -> {
-            dltRecoverer.accept(record, ex);
+            try {
+                dltRecoverer.accept(record, ex);
+            } catch (Exception dltEx) {
+                log.error("DLT recovery: failed to publish record to {}", DLT_TOPIC, dltEx);
+            }
 
             Object value = record.value();
             if (value instanceof StudyPlanJobMessage message) {
                 try {
-                    jobRepository.findByJobId(message.getJobId()).ifPresent(job -> {
+                    jobRepository.findByJobId(message.getJobId()).ifPresentOrElse(job -> {
                         job.setStatus(JobStatus.FAILED);
                         job.setUpdatedAt(Instant.now());
                         jobRepository.save(job);
-                    });
+                    }, () -> log.error("DLT recovery: no job found for jobId {} — cannot mark FAILED",
+                            message.getJobId()));
                 } catch (Exception mongoEx) {
-                    log.error("DLT recovery: failed to mark job {} FAILED in Mongo: {}",
-                            message.getJobId(), mongoEx.getMessage());
+                    log.error("DLT recovery: failed to mark job {} FAILED in Mongo",
+                            message.getJobId(), mongoEx);
                 }
             } else {
                 log.error("DLT recovery: record value was not a StudyPlanJobMessage — could not update job status");

@@ -42,7 +42,10 @@ Thumbs.db
 CLAUDE.md
 .claude/
 
-/prostriver-app/src/test
-/prostriver-planner/src/test
+/prostriver-app/src/test/resources/reports
+/prostriver-planner/src/test/resources/reports
 /docs/local
-/docs/rag_content
+/docs/local/handoff.md
+golden-results.csv
+run-local.ps1
+run-golden.ps1
