@@ -44,3 +44,8 @@ CLAUDE.md
 
 /prostriver-app/src/test/resources/reports
 /prostriver-planner/src/test/resources/reports
+/docs/local
+/docs/local/handoff.md
+golden-results.csv
+run-local.ps1
+run-golden.ps1

@@ -79,10 +79,7 @@ public class StudyPlanConsumer {
             log.info("Job {} DONE → {} subtopics", jobId, totalSubtopics);
 
         } catch (Exception e) {
-            log.error("Job {} failed: {}", jobId, e.getMessage());
-            job.setStatus(JobStatus.FAILED);
-            job.setUpdatedAt(Instant.now());
-            jobRepository.save(job);
+            log.error("Job {} attempt failed: {}", jobId, e.getMessage());
             throw e;
         }
     }

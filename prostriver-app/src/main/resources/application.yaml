@@ -29,6 +29,19 @@ spring:
       hibernate:
         format_sql: true
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-5.6-luna
+          reasoning-effort: low
+          max-completion-tokens: 400
+          temperature: 1.0
+      embedding:
+        options:
+          model: text-embedding-3-small
+
 
 springdoc:
   api-docs:
@@ -62,6 +75,13 @@ prostriver:
     forgot-password-ttl-minutes: 10
     resend-cooldown-seconds: 45
     max-attempts: 5
+
+  help:
+    answer-threshold: 0.55
+    scope-threshold: 0.37
+    rate-limit-per-hour: 30
+    cache-ttl-days: 7
+    max-question-chars: 300
 
 server:
   servlet:

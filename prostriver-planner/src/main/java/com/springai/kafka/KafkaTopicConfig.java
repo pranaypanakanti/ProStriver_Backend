@@ -15,4 +15,11 @@ public class KafkaTopicConfig {
                 .build();
     }
 
+    @Bean
+    public NewTopic studyPlanDeadLetterTopic() {
+        return TopicBuilder.name("study-plan-jobs.DLT")
+                .partitions(1)
+                .build();
+    }
+
 }
